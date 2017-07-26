@@ -1,0 +1,12 @@
+# Logs
+logs
+*.log
+
+# NodeJS files
+node_modules
+npm-debug.log*
+.node_repl_history
+.npm
+
+# Compiled typescript files
+tsbuild/

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "amd",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "tsbuild/app.js",
+        "sourceMap": true
+    },
+    "include": [
+        "app/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
