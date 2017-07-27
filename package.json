@@ -1,0 +1,19 @@
+{
+  "name": "minesweeper.ts",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "tsc",
+    "test": "node node_modules/karma/bin/karma start ./karma.conf.js"
+  },
+  "author": "Andrew Oleshko",
+  "devDependencies": {
+    "jasmine-core": "^2.6.4",
+    "karma": "^1.7.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
+    "karma-typescript-preprocessor": "^0.3.1",
+    "typescript": "^2.4.2"
+  },
+  "dependencies": {}
+}
