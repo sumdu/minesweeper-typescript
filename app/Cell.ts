@@ -8,10 +8,10 @@ namespace App
 		private _countBombAround: number;
 		private _state: CellStateEnum;
 	 
-		constructor (hasBomb: boolean, countBombAround: number) 
+		constructor () 
 		{
-			this._hasBomb = hasBomb;
-			this._countBombAround = countBombAround;
+			this._hasBomb = false;
+			this._countBombAround = 0;
 			this._state = CellStateEnum.Closed;
 		}
 		
@@ -20,9 +20,19 @@ namespace App
 			return this._hasBomb;
 		}
 
+		set HasBomb(value: boolean)
+		{
+			this._hasBomb = value;
+		}
+
 		get CountBombsAround():number
 		{
 			return this._countBombAround;
+		}
+
+		public IncrementBombsAround():void
+		{
+			this._countBombAround++;
 		}
 
 		get State():CellStateEnum
