@@ -50,5 +50,19 @@ namespace App
 				}
 			}
 		}
+
+		
+		public CountBombsNotMarked():number
+		{
+			let flags = 0;
+			let bombs = 0;
+			this.Cells.forEach(col => {
+				col.forEach(el => {
+					if (el.State == CellStateEnum.Flagged) flags++;
+					if (el.HasBomb) bombs++;
+				});
+			});
+			return bombs-flags;
+		}
 	}
 }

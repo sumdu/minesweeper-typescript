@@ -57,6 +57,7 @@ namespace App
 		public readonly BORDER_BOTTOM: ImageData;
         public readonly BORDER_BOTTOM_RIGHT: ImageData;
         public readonly BACKGROUND_PIXEL: ImageData;
+        public readonly BACKGROUND_TIMER: ImageData;
 
         public LoadSkin(fileName: string, onLoaded: SkinLoaded)
         {
@@ -108,7 +109,7 @@ namespace App
                 this.DIGITS = [];
                 for (let i = 0; i < 11; i++)
                 {
-                    this.DIGITS[i] = context.getImageData(i * 16, 33, 13, 23);
+                    this.DIGITS[i] = context.getImageData(i * (11+1), 33, 11, 21);
                 }
 
                 // Reading fourth row: smileys
@@ -155,6 +156,8 @@ namespace App
                 this.BORDER_BOTTOM_RIGHT 	= context.getImageData(15, 110, 12, 11);
 
                 this.BACKGROUND_PIXEL       = context.getImageData(70, 82, 1, 1);
+
+                this.BACKGROUND_TIMER       = context.getImageData(28, 82, 41, 25);
                 
                 onLoaded(this);
             }).bind(this);
@@ -229,8 +232,33 @@ namespace App
 		    context.putImageData(this.skin.SMILE_OK, SMILEY_X_POS, SMILEY_Y_POS);
 
             // draw bombs left counter and timer For field with width 7 cols and more
-		    //if (field.Width > 6) {}
-			    
+            if (field.Width > 6) 
+            {
+                // bomb count
+                context.putImageData(this.skin.BACKGROUND_TIMER, 12+5, 15)
+                let b :string;
+                let bl = field.CountBombsNotMarked();
+                if (bl >= 0) {
+                    if (bl < 10) b = '00' + bl
+                    else if (bl < 100) b = '0' + bl
+                    else b = '' + bl;
+                }
+                else {
+                    if (bl > -10) b = '-0' + (bl*-1)
+                    else if (bl > -100) b = '-' + (bl*-1)
+                    else b = '---';
+                }
+                for (let i = 0; i < b.length; i++) {
+                    context.putImageData((b[i]!='-'?this.skin.DIGITS[+b[i]]:this.skin.DIGITS[10]), 12+5+2 + i * (11+2), 15+2);
+                }
+
+                // timer
+                context.putImageData(this.skin.BACKGROUND_TIMER, 12 + field.Width*16 - 5 - 41, 15)
+                let t :string = '000';
+                for (let i = 0; i < t.length; i++) {
+                    context.putImageData(this.skin.DIGITS[+t[i]], 12 + field.Width*16 - 5 - 41 +2 + i * (11+2), 15+2);
+                }
+            }
 
             // draw cells
             for (let x = 0; x < field.Width; x++)
