@@ -11,8 +11,13 @@ namespace App
         let d = new ConsoleFieldDrawer();
         d.Draw(f); 
 
-        let cd = new CanvasFieldDrawer(<HTMLCanvasElement>document.getElementById("canvas1"));
-        cd.Draw(f);
+        //let cd = new CanvasFieldDrawer();
+        //cd.Draw(f);
+        new Skin().LoadSkin('img/default.png', function(skin) {
+            let canvas = <HTMLCanvasElement>document.getElementById("canvas1");
+            let cd = new CanvasFieldDrawer(canvas, skin);
+            cd.Draw(f);
+        });
     }
 	
 	start();
