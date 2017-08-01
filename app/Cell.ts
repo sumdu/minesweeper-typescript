@@ -48,6 +48,11 @@ namespace App
 			}
 			this._state = newState;
 		}
+
+		get IsEmpty():boolean
+		{
+			return !this.HasBomb && this.CountBombsAround == 0;
+		}
 	}
 
 	export enum CellStateEnum {

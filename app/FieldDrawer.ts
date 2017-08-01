@@ -287,7 +287,7 @@ namespace App
 			// If game is over then then nothing happens on click
 			// and field's paint method is never called.
 			if (!game.GameOver) {
-				context.RecordCurrentFieldState(context); // TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+				context.RecordCurrentFieldState(context);
 				// Clicked with left button and cell is closed
 				if (cells[x][y].State == CellStateEnum.Closed) {
 					// Click on bomb.
@@ -300,7 +300,7 @@ namespace App
 					}
 					// Click on empty cell flags a range and then opens them.
 					else if (cells[x][y].CountBombsAround == 0) {
-						//this.openRange(cM, cN); // TO DOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+						context.OpenRange(x, y, context); 
 					}
 				}
 				// Paint only if the game is not over.
@@ -328,18 +328,116 @@ namespace App
             }
         }
 
+        private OpenRange(x:number, y: number, context:CanvasFieldDrawer):void
+        {
+            let field = context.field;
+            let cells = field.Cells;
+            let processedFlags: boolean[][] = [];
+
+            // create an array to hold processed flags
+            for (let i = 0; i < field.Width; i++)
+            {
+                processedFlags[i] = [];
+                for (let j = 0; j < field.Height; j++) 
+                {
+                    processedFlags[i][j] = false;
+                }
+            }
+
+            context.FlagRange(x, y, processedFlags, context);
+
+            for (let i = 0; i < field.Width; i++)
+            {
+                for (let j = 0; j < field.Height; j++) 
+                {
+                    if (processedFlags[i][j] && cells[i][j].State == CellStateEnum.Closed) 
+                    {
+					    cells[i][j].State = CellStateEnum.Open;
+                    }
+                    processedFlags[i][j] = false; // not really required here...
+                }
+            }
+        }
+
+        private FlagRange(i: number, j: number, processedFlags:boolean[][], context:CanvasFieldDrawer) 
+        {
+            let cells = context.field.Cells;
+            let m: number = context.field.Height;
+            let n: number = context.field.Width;
+
+            processedFlags[i][j] = true;
+            if (i > 0 && j > 0) 
+                if (cells[i-1][j-1].IsEmpty && !processedFlags[i-1][j-1] && cells[i-1][j-1].State == CellStateEnum.Closed) {
+                    processedFlags[i-1][j-1] = true;
+                    context.FlagRange(i - 1, j - 1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i-1][j-1] = true;
+                }
+            if (i > 0)
+                if (cells[i-1][j].IsEmpty && !processedFlags[i-1][j] && cells[i-1][j].State == CellStateEnum.Closed) {
+                    processedFlags[i-1][j] = true;
+                    context.FlagRange(i - 1, j, processedFlags, context);
+                }
+                else {
+                    processedFlags[i-1][j] = true;
+                }
+            if (i > 0 && j != n - 1)
+                if (cells[i-1][j+1].IsEmpty && !processedFlags[i-1][j+1] && cells[i-1][j+1].State == CellStateEnum.Closed) {
+                    processedFlags[i-1][j+1] = true;
+                    context.FlagRange(i-1, j+1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i-1][j+1] = true;
+                }
+            if (j > 0)
+                if (cells[i]  [j-1].IsEmpty && !processedFlags[i][j-1] && cells[i][j-1].State == CellStateEnum.Closed) {
+                    processedFlags[i][j-1] = true;
+                    context.FlagRange(i, j-1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i][j-1] = true;
+                }
+            if (j != n - 1) 
+                if (cells[i]  [j+1].IsEmpty && !processedFlags[i][j+1]  && cells[i][j+1].State == CellStateEnum.Closed) {
+                    processedFlags[i][j+1] = true;
+                    context.FlagRange(i, j+1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i][j+1] = true;
+                }
+            if (i < m - 1 && j > 0)
+                if (cells[i+1][j-1].IsEmpty && !processedFlags[i+1][j-1]  && cells[i+1][j-1].State == CellStateEnum.Closed) {
+                    processedFlags[i+1][j-1] = true;
+                    context.FlagRange(i+1, j-1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i+1][j-1] = true;
+                }
+            if (i < m - 1) 
+                if (cells[i+1][j].IsEmpty && !processedFlags[i+1][j]  && cells[i+1][j].State == CellStateEnum.Closed) {
+                    processedFlags[i+1][j] = true;
+                    context.FlagRange(i+1, j, processedFlags, context);
+                }
+                else {
+                    processedFlags[i+1][j] = true;
+                }
+            if (i < m - 1 && j < n - 1) 
+                if (cells[i+1][j+1].IsEmpty && !processedFlags[i+1][j+1]  && cells[i+1][j+1].State == CellStateEnum.Closed) {
+                    processedFlags[i+1][j+1] = true;
+                    context.FlagRange(i+1, j+1, processedFlags, context);
+                }
+                else {
+                    processedFlags[i+1][j+1] = true;
+                }
+	    }
+
         Draw():void
         {
             let field = this.field;
             let skin = this.skin;
             let context = this.canvas.getContext("2d");
             
-            // calculate coordinates
-            let FIELD_START_POS_X :number = 12;          //  x: left top corner of field
-            let FIELD_START_POS_Y :number = 54;          //  y: left top corner of field
-            let FIELD_END_POS_X :number = 12 + field.Width * 16;      //  x2: botoom right corner of field
-            let FIELD_END_POS_Y :number  = 54 + field.Height * 16; 	  //  y2: botoom right corner of field
-
             this.canvas.height = field.Width * 16 + 54 + 11;
             this.canvas.width  = field.Height * 16 + 12 + 12;
 
@@ -425,8 +523,8 @@ namespace App
                 for (let y = 0; y < field.Height; y++) 
                 {
                     this.DrawCell(field.Cells[x][y], context, skin,
-                        FIELD_START_POS_X + x * skin.CELL_WIDTH, 
-                        FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+                        skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
+                        skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
                 }
             }
         }
