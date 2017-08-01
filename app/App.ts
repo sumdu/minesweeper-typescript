@@ -15,8 +15,9 @@ namespace App
         //cd.Draw(f);
         new Skin().LoadSkin('img/default.png', function(skin) {
             let canvas = <HTMLCanvasElement>document.getElementById("canvas1");
-            let cd = new CanvasFieldDrawer(canvas, skin);
-            cd.Draw(f);
+            let g = new Game();
+            let cd = new CanvasFieldDrawer(canvas, skin, f, g);
+            cd.Init();
         });
     }
 	
