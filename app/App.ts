@@ -7,7 +7,7 @@ namespace App
 {
     function start():void
     {
-        let f = new FieldBuilder().Build(new EasyGameSettings());
+        let f = new FieldBuilder().Build(new TestGameSettings());
         let d = new ConsoleFieldDrawer();
         d.Draw(f); 
 

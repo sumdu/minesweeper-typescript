@@ -64,5 +64,56 @@ namespace App
 			});
 			return bombs-flags;
 		}
+		
+		public CountBombs():number
+		{
+			let bombs = 0;
+			this.Cells.forEach(col => {
+				col.forEach(el => {
+					if (el.HasBomb) bombs++;
+				});
+			});
+			return bombs;
+		}
+
+		private AllOpenedOrFlagged():boolean
+		{
+			let res: boolean = true;
+			for (let x = 0; x < this.Width; x++)
+				for (let y = 0; y < this.Height; y++) 
+					res = res && (this.Cells[x][y].State == CellStateEnum.Flagged || this.Cells[x][y].State == CellStateEnum.Open)
+			return res;
+		}
+
+		private BombExploded():boolean {
+			let res: boolean = false;
+			for (let x = 0; x < this.Width; x++)
+				for (let y = 0; y < this.Height; y++) 
+					res = res || (this.Cells[x][y].State == CellStateEnum.Exploded);
+			return res;
+		}
+
+		public GetGameStatus():GameStatusEnum {
+			let res: GameStatusEnum;
+			if (this.AllOpenedOrFlagged()) {
+				// number of bombs == number of flags
+				if (this.CountBombsNotMarked() == 0)
+					res = GameStatusEnum.Won
+				else
+					res = GameStatusEnum.Lost
+			}
+			else if (this.BombExploded())
+				res = GameStatusEnum.Lost
+			else 
+				res = GameStatusEnum.InProgress;
+			return res;
+		}
+	}
+
+	export enum GameStatusEnum
+	{
+		Won,
+		Lost,
+		InProgress
 	}
 }

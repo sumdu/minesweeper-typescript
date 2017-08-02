@@ -196,10 +196,14 @@ namespace App
         BindEventListeners(): void 
         {
             let that = this;
+            
+            $(this.canvas).off("click",this.OnClickEventListener);
+            $(this.canvas).off("contextmenu", this.OnClickEventListener);
+
             $(this.canvas).on("click", {context: that}, this.OnClickEventListener);
             //$(this.canvas).on("mousedown", {context: that}, this.OnClickEventListener );
             //$(this.canvas).on("mouseup", {context: that}, this.OnClickEventListener );
-            //$(this.canvas).on("contextmenu", {context: that}, function():boolean {alert('contextmenu');return false;} );
+            $(this.canvas).on("contextmenu", {context: that}, this.OnClickEventListener);
 
         }
 
@@ -221,11 +225,31 @@ namespace App
                 {
                     context.ProcessLeftClick(coords, context);
                 }
+                else if (event.which == 2) 
+                {
+                    context.ProcessMiddleClick(coords, context);
+                }
+                else if (event.which == 3)
+                {
+                    context.ProcessRightClick(coords, context);
+                }
             }
 
             if (context.IsInsideSmiley(x, y, skin, field))
             {
                 // start new game
+                // same as initialized by CanvasFieldDrawer constructor
+                let gameSettings :IGameSettings = {
+                    Width: context.field.Width,
+                    Height: context.field.Height,
+                    BombCount: context.field.CountBombs()
+                };
+                let f = new FieldBuilder().Build(gameSettings);
+                context.field = f;
+                context.game = new Game();
+                // same as CanvasFieldDrawer.Init method
+                //context.BindEventListeners();
+                context.Draw();
             }
         }
 
@@ -275,7 +299,7 @@ namespace App
             let x = coords.X;
             let y = coords.Y;
 
-            if (game.GameStarted) 
+            if (!game.GameStarted) 
             {
 				game.GameStarted = new Date();
 				// For field with width 6 columns or less dont paint bombs and time counters.
@@ -308,9 +332,39 @@ namespace App
 			}
         }
 
-        private ProcessMiddleClick(coords: IFieldCoordinate):void
+        private ProcessMiddleClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
         {
+        }
+
+        private ProcessRightClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
+        {
+            let x = coords.X;
+            let y = coords.Y;
+            let game = context.game;
+            let skin = context.skin;
+            let cell = context.field.Cells[x][y];
+            let context2d = context.canvas.getContext("2d");
             
+
+            if (!game.GameOver) {
+                //context.RecordCurrentFieldState(context);
+                var cM = y;
+                var cN = x;
+                if (cell.State == CellStateEnum.Closed) 
+                    cell.State = CellStateEnum.Flagged;
+                else if (cell.State == CellStateEnum.Flagged) {
+                    /*if (this.useQuestion)*/
+                        cell.State = CellStateEnum.Questioned;
+                    /*else
+                        cell.State = CellStateEnum.Closed;*/
+                }
+                else if (cell.State == CellStateEnum.Questioned) 
+                    cell.State = CellStateEnum.Closed;
+
+                this.DrawCell(cell, context2d, skin,
+                        skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
+                        skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+            }
         }
 
         private RecordCurrentFieldState(context: CanvasFieldDrawer):void 
@@ -359,76 +413,76 @@ namespace App
             }
         }
 
-        private FlagRange(i: number, j: number, processedFlags:boolean[][], context:CanvasFieldDrawer) 
+        private FlagRange(x: number, y: number, processedFlags:boolean[][], context:CanvasFieldDrawer) 
         {
             let cells = context.field.Cells;
-            let m: number = context.field.Height;
-            let n: number = context.field.Width;
+            let h: number = context.field.Height;
+            let w: number = context.field.Width;
 
-            processedFlags[i][j] = true;
-            if (i > 0 && j > 0) 
-                if (cells[i-1][j-1].IsEmpty && !processedFlags[i-1][j-1] && cells[i-1][j-1].State == CellStateEnum.Closed) {
-                    processedFlags[i-1][j-1] = true;
-                    context.FlagRange(i - 1, j - 1, processedFlags, context);
+            processedFlags[x][y] = true;
+            if (x > 0 && y > 0) 
+                if (cells[x-1][y-1].IsEmpty && !processedFlags[x-1][y-1] && cells[x-1][y-1].State == CellStateEnum.Closed) {
+                    processedFlags[x-1][y-1] = true;
+                    context.FlagRange(x - 1, y - 1, processedFlags, context);
                 }
                 else {
-                    processedFlags[i-1][j-1] = true;
+                    processedFlags[x-1][y-1] = true;
                 }
-            if (i > 0)
-                if (cells[i-1][j].IsEmpty && !processedFlags[i-1][j] && cells[i-1][j].State == CellStateEnum.Closed) {
-                    processedFlags[i-1][j] = true;
-                    context.FlagRange(i - 1, j, processedFlags, context);
-                }
-                else {
-                    processedFlags[i-1][j] = true;
-                }
-            if (i > 0 && j != n - 1)
-                if (cells[i-1][j+1].IsEmpty && !processedFlags[i-1][j+1] && cells[i-1][j+1].State == CellStateEnum.Closed) {
-                    processedFlags[i-1][j+1] = true;
-                    context.FlagRange(i-1, j+1, processedFlags, context);
+            if (x > 0)
+                if (cells[x-1][y].IsEmpty && !processedFlags[x-1][y] && cells[x-1][y].State == CellStateEnum.Closed) {
+                    processedFlags[x-1][y] = true;
+                    context.FlagRange(x - 1, y, processedFlags, context);
                 }
                 else {
-                    processedFlags[i-1][j+1] = true;
+                    processedFlags[x-1][y] = true;
                 }
-            if (j > 0)
-                if (cells[i]  [j-1].IsEmpty && !processedFlags[i][j-1] && cells[i][j-1].State == CellStateEnum.Closed) {
-                    processedFlags[i][j-1] = true;
-                    context.FlagRange(i, j-1, processedFlags, context);
-                }
-                else {
-                    processedFlags[i][j-1] = true;
-                }
-            if (j != n - 1) 
-                if (cells[i]  [j+1].IsEmpty && !processedFlags[i][j+1]  && cells[i][j+1].State == CellStateEnum.Closed) {
-                    processedFlags[i][j+1] = true;
-                    context.FlagRange(i, j+1, processedFlags, context);
+            if (x > 0 && y != h - 1)
+                if (cells[x-1][y+1].IsEmpty && !processedFlags[x-1][y+1] && cells[x-1][y+1].State == CellStateEnum.Closed) {
+                    processedFlags[x-1][y+1] = true;
+                    context.FlagRange(x-1, y+1, processedFlags, context);
                 }
                 else {
-                    processedFlags[i][j+1] = true;
+                    processedFlags[x-1][y+1] = true;
                 }
-            if (i < m - 1 && j > 0)
-                if (cells[i+1][j-1].IsEmpty && !processedFlags[i+1][j-1]  && cells[i+1][j-1].State == CellStateEnum.Closed) {
-                    processedFlags[i+1][j-1] = true;
-                    context.FlagRange(i+1, j-1, processedFlags, context);
-                }
-                else {
-                    processedFlags[i+1][j-1] = true;
-                }
-            if (i < m - 1) 
-                if (cells[i+1][j].IsEmpty && !processedFlags[i+1][j]  && cells[i+1][j].State == CellStateEnum.Closed) {
-                    processedFlags[i+1][j] = true;
-                    context.FlagRange(i+1, j, processedFlags, context);
+            if (y > 0)
+                if (cells[x]  [y-1].IsEmpty && !processedFlags[x][y-1] && cells[x][y-1].State == CellStateEnum.Closed) {
+                    processedFlags[x][y-1] = true;
+                    context.FlagRange(x, y-1, processedFlags, context);
                 }
                 else {
-                    processedFlags[i+1][j] = true;
+                    processedFlags[x][y-1] = true;
                 }
-            if (i < m - 1 && j < n - 1) 
-                if (cells[i+1][j+1].IsEmpty && !processedFlags[i+1][j+1]  && cells[i+1][j+1].State == CellStateEnum.Closed) {
-                    processedFlags[i+1][j+1] = true;
-                    context.FlagRange(i+1, j+1, processedFlags, context);
+            if (y != h - 1) 
+                if (cells[x]  [y+1].IsEmpty && !processedFlags[x][y+1]  && cells[x][y+1].State == CellStateEnum.Closed) {
+                    processedFlags[x][y+1] = true;
+                    context.FlagRange(x, y+1, processedFlags, context);
                 }
                 else {
-                    processedFlags[i+1][j+1] = true;
+                    processedFlags[x][y+1] = true;
+                }
+            if (x < w - 1 && y > 0)
+                if (cells[x+1][y-1].IsEmpty && !processedFlags[x+1][y-1]  && cells[x+1][y-1].State == CellStateEnum.Closed) {
+                    processedFlags[x+1][y-1] = true;
+                    context.FlagRange(x+1, y-1, processedFlags, context);
+                }
+                else {
+                    processedFlags[x+1][y-1] = true;
+                }
+            if (x < w - 1) 
+                if (cells[x+1][y].IsEmpty && !processedFlags[x+1][y]  && cells[x+1][y].State == CellStateEnum.Closed) {
+                    processedFlags[x+1][y] = true;
+                    context.FlagRange(x+1, y, processedFlags, context);
+                }
+                else {
+                    processedFlags[x+1][y] = true;
+                }
+            if (x < w - 1 && y < h - 1) 
+                if (cells[x+1][y+1].IsEmpty && !processedFlags[x+1][y+1]  && cells[x+1][y+1].State == CellStateEnum.Closed) {
+                    processedFlags[x+1][y+1] = true;
+                    context.FlagRange(x+1, y+1, processedFlags, context);
+                }
+                else {
+                    processedFlags[x+1][y+1] = true;
                 }
 	    }
 
@@ -438,8 +492,8 @@ namespace App
             let skin = this.skin;
             let context = this.canvas.getContext("2d");
             
-            this.canvas.height = field.Width * 16 + 54 + 11;
-            this.canvas.width  = field.Height * 16 + 12 + 12;
+            this.canvas.height = field.Height * 16 + 54 + 11;
+            this.canvas.width  = field.Width * 16 + 12 + 12;
 
             // draw border
        		// BORDER_TOP_LEFT        11 x 12 
@@ -458,17 +512,17 @@ namespace App
             context.putImageData(skin.BORDER_TOP_LEFT, 0, 0);
             for (let i = 0; i < field.Width*16; i++)
                 context.putImageData(skin.BORDER_TOP, 12 + i, 0);
-            context.putImageData(skin.BORDER_TOP_RIGHT, 12 + field.Height * 16, 0);
+            context.putImageData(skin.BORDER_TOP_RIGHT, 12 + field.Width * 16, 0);
 
             for (let i = 0; i < 32; i++)
                 context.putImageData(skin.BORDER_LEFT1, 0, 11+i);
             for (let i = 0; i < 32; i++)
-                context.putImageData(skin.BORDER_RIGHT1, 12 + field.Height * 16, 11+i);
+                context.putImageData(skin.BORDER_RIGHT1, 12 + field.Width * 16, 11+i);
 
             context.putImageData(skin.BORDER_MEDIUM_LEFT, 0, 43);
             for (let i = 0; i < field.Width*16; i++)
                 context.putImageData(skin.BORDER_MEDIUM, 12 + i, 43);
-            context.putImageData(skin.BORDER_MEDIUM_RIGHT, 12 + field.Height * 16, 43);
+            context.putImageData(skin.BORDER_MEDIUM_RIGHT, 12 + field.Width * 16, 43);
 
             for (let i = 0; i < field.Height*16; i++)
                 context.putImageData(skin.BORDER_LEFT, 0, 54+i);
@@ -478,7 +532,7 @@ namespace App
             context.putImageData(skin.BORDER_BOTTOM_LEFT, 0, 54 + field.Height*16);
             for (let i = 0; i < field.Width*16; i++)
                 context.putImageData(skin.BORDER_BOTTOM, 12 + i, 54 + field.Height*16);
-            context.putImageData(skin.BORDER_BOTTOM_RIGHT, 12 + field.Height*16, 54 + field.Height*16);
+            context.putImageData(skin.BORDER_BOTTOM_RIGHT, 12 + field.Width*16, 54 + field.Height*16);
         
             // fill background behind smiley
             for (let i=0; i<field.Width*16; i++)
@@ -536,13 +590,38 @@ namespace App
             let prevState = context.previousState;
             let context2d = context.canvas.getContext("2d");
 
+            // Every time on output check condition end of game, becuase it results
+            // in a different drawing algorythm. E.g., if game is over then all bombs
+            // are shown.
+            if (context.field.GetGameStatus() != GameStatusEnum.InProgress) {
+                context.game.GameOver = true;
+                // Stop drawing time game played. It must be done in two cases
+                // 1) before letting garbage collector take f
+                // 2) upon end of the game
+                //clearInterval(f.timer); // TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+                // Record time game played.
+                // On first call to paint() game is not started, so don't write timeEnd.
+                if (context.game.GameStarted)
+                    context.game.GameEnded = new Date();
+
+                for (let x = 0; x < field.Width; x++)
+                {
+                    for (let y = 0; y < field.Height; y++) 
+                    {
+                        context.DrawOpenCell(field.Cells[x][y], context2d, skin,
+                            skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
+                            skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+                    }
+                }
+		    }
+
             for (let x = 0; x < field.Width; x++)
             {
                 for (let y = 0; y < field.Height; y++) 
                 {
                     if (field.Cells[x][y].State != prevState[x][y])
                     {
-                        this.DrawCell(field.Cells[x][y],context2d, skin,
+                        context.DrawCell(field.Cells[x][y],context2d, skin,
                             skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
                             skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
                     }
@@ -550,6 +629,7 @@ namespace App
             }
         }
 
+        // draw cell while game is in progress
         DrawCell(cell: Cell, context: CanvasRenderingContext2D, skin: Skin, xPos: number, yPos: number):void
         {
             let img: ImageData = this.skin.CLOSED;
@@ -571,6 +651,30 @@ namespace App
                     img = skin.QUESTION;
                     break;
             }
+            context.putImageData(img, xPos, yPos);
+        }
+
+        // draw cell when game is over
+        DrawOpenCell(cell: Cell, context: CanvasRenderingContext2D, skin: Skin, xPos: number, yPos: number):void
+        {
+            let img: ImageData = skin.CLOSED;
+            if (cell.State == CellStateEnum.Open)
+            {
+                img = skin.OPENED_CELLS[cell.CountBombsAround];
+            }
+            else if (cell.State == CellStateEnum.Closed && cell.HasBomb)
+            {
+                img = skin.MINE;
+            }
+            else if (cell.State == CellStateEnum.Exploded)
+            {
+                img = skin.EXPLODED;
+            }
+            if (!cell.HasBomb && (cell.State == CellStateEnum.Flagged || cell.State == CellStateEnum.Questioned))
+            {
+                img = skin.WRONG_FLAG;
+            }
+         
             context.putImageData(img, xPos, yPos);
         }
     }

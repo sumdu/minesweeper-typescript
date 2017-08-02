@@ -27,4 +27,11 @@ namespace App
 		public get Height(): number {return 16};
 		public get BombCount(): number {return 99};
 	}
+
+	export class TestGameSettings implements IGameSettings
+	{
+		public get Width(): number {return 20};
+		public get Height(): number {return 10};
+		public get BombCount(): number {return 20};
+	}
 }
