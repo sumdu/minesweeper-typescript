@@ -198,6 +198,8 @@ namespace App
             let that = this;
             
             $(this.canvas).off("click",this.OnClickEventListener);
+            //$(this.canvas).off("mousedown",this.OnClickEventListener);
+            //$(this.canvas).off("mouseup",this.OnClickEventListener);
             $(this.canvas).off("contextmenu", this.OnClickEventListener);
 
             $(this.canvas).on("click", {context: that}, this.OnClickEventListener);
@@ -218,7 +220,7 @@ namespace App
             var x = Math.floor(event.clientX - rect.left);
             var y = Math.floor(event.clientY - rect.top);
 
-            if (context.IsInsideField(x, y, skin, field))
+            if (context.IsInsideField(x, y, skin, field) && !context.game.GameOver)
             {
                 let coords = context.GetFieldCoordinates(x, y, skin, field);
                 if (event.which == 1) // left mouse
@@ -306,11 +308,9 @@ namespace App
 				// if (field.Width > 6)
 				// 	this.timer = setInterval(this.paintTime.bind(this), 1000);
 			}
-			var cM = y;
-			var cN = x;
 			// If game is over then then nothing happens on click
 			// and field's paint method is never called.
-			if (!game.GameOver) {
+			//if (!game.GameOver) {
 				context.RecordCurrentFieldState(context);
 				// Clicked with left button and cell is closed
 				if (cells[x][y].State == CellStateEnum.Closed) {
@@ -327,13 +327,118 @@ namespace App
 						context.OpenRange(x, y, context); 
 					}
 				}
-				// Paint only if the game is not over.
 				context.RedrawCells(context);
-			}
+			//}
         }
 
         private ProcessMiddleClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
         {
+            let game = context.game;
+            let field = context.field;
+            let cells = context.field.Cells;
+            let x = coords.X;
+            let y = coords.Y;
+
+            let w = field.Width;
+            let h = field.Height;
+
+            // If game is over then then nothing happens on click
+            // and field's paint method is never called.
+            //if (!this.gameOver) {
+                context.RecordCurrentFieldState(context);
+                var cel;
+                // Allow middle click only on open cells, which has a number 1..8
+                if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0) {
+                    if (field.NeighboursAreCorrectlyMarked(x,y)) {
+                        // -------------------------
+                        if (x > 0 && y > 0 && cells[x-1][y-1].State == CellStateEnum.Closed) {
+                            cel = cells[x-1][y-1]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x-1, y-1, context); 
+                            }
+                        }
+                        // -------------------------
+                        if (x > 0 && cells[x-1][y].State == CellStateEnum.Closed) {
+                            cel = cells[x-1][y]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x-1, y, context); 
+                            }
+                        }
+                        // -------------------------
+                        if (x > 0 && y != h - 1 && cells[x-1][y+1].State == CellStateEnum.Closed) {
+                            cel = cells[x-1][y+1]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x-1, y+1, context); 
+                            }
+                        }
+                        // ---------------------------------------------------------------------
+                        cel = cells[x][y-1];
+                        if (y > 0 && cel.State == CellStateEnum.Closed) {
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x, y-1, context); 
+                            }
+                        }
+                        // -------------------------
+                        cel = cells[x][y+1];
+                        if (y != h - 1 && cel.State == CellStateEnum.Closed) {
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x, y+1, context); 
+                            }
+                        }
+                        // -----------------------------------------------------------------------
+                        if (x < w - 1 && y > 0 && cells[x+1][y-1].State == CellStateEnum.Closed) {
+                            cel = cells[x+1][y-1]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x+1, y-1, context); 
+                            }
+                        }
+                        // -------------------------
+                        if (x < w - 1 && cells[x+1][y].State == CellStateEnum.Closed) {
+                            cel = cells[x+1][y]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x+1, y, context); 
+                            }
+                        }
+                        // -------------------------
+                        if (x < w - 1 && y < h - 1 && cells[x+1][y+1].State == CellStateEnum.Closed) {
+                            cel = cells[x+1][y+1]; // it will cause exception "Index out of range" if declared above
+                            if (cel.CountBombsAround > 0) {
+                                cel.State = CellStateEnum.Open;
+                            }
+                            else if (cel.CountBombsAround == 0) {
+                                context.OpenRange(x+1, y+1, context); 
+                            }
+                        }
+                    }
+                    // Not all bombs around are marked correctly
+                    // game overs and wrongly marked bombs explode.
+                    else {
+                        field.ExplodeBombsAround(x, y);
+                    }
+                //}
+                context.RedrawCells(context);
+            }
         }
 
         private ProcessRightClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
@@ -346,10 +451,8 @@ namespace App
             let context2d = context.canvas.getContext("2d");
             
 
-            if (!game.GameOver) {
+            //if (!game.GameOver) {
                 //context.RecordCurrentFieldState(context);
-                var cM = y;
-                var cN = x;
                 if (cell.State == CellStateEnum.Closed) 
                     cell.State = CellStateEnum.Flagged;
                 else if (cell.State == CellStateEnum.Flagged) {
@@ -364,7 +467,7 @@ namespace App
                 this.DrawCell(cell, context2d, skin,
                         skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
                         skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
-            }
+            //}
         }
 
         private RecordCurrentFieldState(context: CanvasFieldDrawer):void 
@@ -670,10 +773,19 @@ namespace App
             {
                 img = skin.EXPLODED;
             }
-            if (!cell.HasBomb && (cell.State == CellStateEnum.Flagged || cell.State == CellStateEnum.Questioned))
+            else if (cell.HasBomb && cell.State == CellStateEnum.Flagged)
+            {
+                img = skin.FLAG;
+            }
+            else if (!cell.HasBomb && cell.State == CellStateEnum.Flagged)
             {
                 img = skin.WRONG_FLAG;
             }
+            else if (cell.HasBomb && cell.State == CellStateEnum.Questioned)
+            {
+                img = skin.WRONG_FLAG;
+            }
+
          
             context.putImageData(img, xPos, yPos);
         }

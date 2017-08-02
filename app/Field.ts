@@ -51,7 +51,37 @@ namespace App
 			}
 		}
 
-		
+		public NeighboursAreCorrectlyMarked(x:number, y:number):boolean
+		{
+			let neighbours = this.GetNeighbours(x,y);
+			for (let i=0; i<3; i++)
+			{
+				for (let j=0; j<3; j++)
+				{
+					if (neighbours[i][j] != null && neighbours[i][j].HasBomb && neighbours[i][j].State != CellStateEnum.Flagged)
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		public ExplodeBombsAround(x:number, y:number):void
+		{
+			let neighbours = this.GetNeighbours(x,y);
+			for (let i=0; i<3; i++)
+			{
+				for (let j=0; j<3; j++)
+				{
+					if (neighbours[i][j] != null && neighbours[i][j].HasBomb && neighbours[i][j].State != CellStateEnum.Flagged)
+					{
+						neighbours[i][j].State = CellStateEnum.Exploded;
+					}
+				}
+			}
+		}
+
 		public CountBombsNotMarked():number
 		{
 			let flags = 0;
