@@ -41,7 +41,7 @@ namespace App
         public readonly WRONG_FLAG: ImageData;
         public readonly EXPLODED: ImageData;
         public readonly QUESTION: ImageData;
-        public readonly QUESTION_PRESSED: ImageData;
+        public readonly QUESTION_OPENED: ImageData;
         public readonly DIGITS: ImageData[];
         public readonly SMILE_OK: ImageData;
         public readonly SMILE_GUESS: ImageData;
@@ -765,28 +765,39 @@ namespace App
             {
                 img = skin.OPENED_CELLS[cell.CountBombsAround];
             }
-            else if (cell.State == CellStateEnum.Closed && cell.HasBomb)
+            else if (cell.State == CellStateEnum.Closed)
             {
-                img = skin.MINE;
+                if (cell.HasBomb)
+                {
+                    img = skin.MINE;
+                }
             }
             else if (cell.State == CellStateEnum.Exploded)
             {
                 img = skin.EXPLODED;
             }
-            else if (cell.HasBomb && cell.State == CellStateEnum.Flagged)
+            else if (cell.State == CellStateEnum.Flagged)
             {
-                img = skin.FLAG;
+                if (cell.HasBomb)
+                {
+                    img = skin.FLAG;
+                }
+                else
+                {
+                    img = skin.WRONG_FLAG;
+                }
             }
-            else if (!cell.HasBomb && cell.State == CellStateEnum.Flagged)
+            else if (cell.State == CellStateEnum.Questioned)
             {
-                img = skin.WRONG_FLAG;
+                if (cell.HasBomb)
+                {
+                    img = skin.MINE;
+                }
+                else
+                {
+                    img = skin.QUESTION;
+                }
             }
-            else if (cell.HasBomb && cell.State == CellStateEnum.Questioned)
-            {
-                img = skin.WRONG_FLAG;
-            }
-
-         
             context.putImageData(img, xPos, yPos);
         }
     }
