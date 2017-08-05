@@ -52,12 +52,14 @@ namespace App.FieldDrawer
             if (event.type == "mousedown")
             {
                 context.isMousePressed = true;
+                context.DrawSmiley(skin.SMILE_GUESS);
                 context.lastPressedXCoord = x;
                 context.lastPressedYCoord = y;
             }
             else if (event.type == "mouseup")
             {
                 context.isMousePressed = false;
+                context.DrawSmiley(skin.SMILE_OK);
             }
 
             // Clicked inside FIELD
@@ -189,6 +191,7 @@ namespace App.FieldDrawer
         private OnBodyMoveEventListener(event:JQueryEventObject):void
         {
             let context = <CanvasFieldDrawer>event.data.context;
+            let skin = context.skin;
 
             if (!context.isMousePressed)
                 return;
@@ -204,6 +207,7 @@ namespace App.FieldDrawer
             if (!isInsideCanvas)
             {
                 context.isMousePressed = false;
+                context.DrawSmiley(skin.SMILE_OK);
             }
         }
 

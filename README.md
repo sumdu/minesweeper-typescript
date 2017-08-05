@@ -11,6 +11,9 @@ typings install
 # Use following options (only for adding a new typing)
 typings install dt~jquery --global --save
 
+Known issues:
+- when dragging pressed mouse over cells, sometime pressed cell stays pressed after cursor leaves that cell
+
 Todo:
 - bind handler for middle click
     > verify logic: must be if number inside the cell = number of flags =>
