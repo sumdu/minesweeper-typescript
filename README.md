@@ -12,13 +12,13 @@ typings install
 typings install dt~jquery --global --save
 
 Todo:
-- redraw smile and pressed cells when dragging mouse
 - bind handler for middle click
     > verify logic: must be if number inside the cell = number of flags =>
         > flags correct - open
         > not correct - blow up
 - remember best scores
 
+(done) - redraw smile and pressed cells when dragging mouse
 (done) - add mouse up and down effect on cells
 (done)    > mouse down - pressed effect for cell under cursor
 (done)    > mouse up - click performed for cell under cursor

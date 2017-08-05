@@ -7,6 +7,10 @@ namespace App.FieldDrawer
         private previousState : CellStateEnum[][];
         private timer : number;
 
+        private isMousePressed : boolean;
+        private lastPressedXCoord : number = 0;
+        private lastPressedYCoord : number = 0;
+
         public constructor(public canvas: HTMLCanvasElement, public skin: Skin, public field: Field, public game: Game) {}
 
         Init():void
@@ -22,11 +26,15 @@ namespace App.FieldDrawer
             //$(this.canvas).off("click",this.OnClickEventListener);
             $(this.canvas).off("mousedown",this.OnClickEventListener);
             $(this.canvas).off("mouseup",this.OnClickEventListener);
+            $(this.canvas).off("mousemove",this.OnMoveEventListener);
+            $(document).off("mousemove", this.OnBodyMoveEventListener);
             $(this.canvas).off("contextmenu", this.OnClickEventListener);
 
             //$(this.canvas).on("click", {context: that}, this.OnClickEventListener);
             $(this.canvas).on("mousedown", {context: that}, this.OnClickEventListener );
             $(this.canvas).on("mouseup", {context: that}, this.OnClickEventListener );
+            $(this.canvas).on("mousemove", {context: that}, this.OnMoveEventListener );
+            $(document).on("mousemove", {context: that}, this.OnBodyMoveEventListener );
             $(this.canvas).on("contextmenu", {context: that}, this.OnClickEventListener);
         }
 
@@ -40,6 +48,17 @@ namespace App.FieldDrawer
             var rect = canvas.getBoundingClientRect();
             var x = Math.floor(event.clientX - rect.left);
             var y = Math.floor(event.clientY - rect.top);
+
+            if (event.type == "mousedown")
+            {
+                context.isMousePressed = true;
+                context.lastPressedXCoord = x;
+                context.lastPressedYCoord = y;
+            }
+            else if (event.type == "mouseup")
+            {
+                context.isMousePressed = false;
+            }
 
             // Clicked inside FIELD
 
@@ -61,9 +80,10 @@ namespace App.FieldDrawer
                         context.ProcessRightClick(coords, context);
                     }
                 }
-                else if (event.which == 1 /* left */ && event.type == "mousedown" && field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
+                else if (event.which == 1 /* left */ && event.type == "mousedown")
                 {
-                    context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
+                        context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
                 }
             }
 
@@ -97,6 +117,94 @@ namespace App.FieldDrawer
             }
 
             return false;
+        }
+
+        private OnMoveEventListener(event:JQueryEventObject):void
+        {
+            let context = <CanvasFieldDrawer>event.data.context;
+            if (context.isMousePressed)
+            {
+                let field = context.field;
+                let skin = context.skin;
+                let canvas = context.canvas;
+
+                var rect = canvas.getBoundingClientRect();
+                var x = Math.floor(event.clientX - rect.left);
+                var y = Math.floor(event.clientY - rect.top);
+
+                let lx = context.lastPressedXCoord;
+                let ly = context.lastPressedYCoord;
+
+
+                let isInsideSmiley: boolean = context.IsInsideSmiley(x, y, skin, field);
+                let wasInsideSmiley: boolean = context.IsInsideSmiley(lx, ly, skin, field);
+
+                if (wasInsideSmiley && !isInsideSmiley)
+                    context.DrawSmiley(context.skin.SMILE_OK);
+                if (!wasInsideSmiley && isInsideSmiley)
+                    context.DrawSmiley(context.skin.SMILE_PRESSED);
+
+
+                let isInsideField: boolean = context.IsInsideField(x, y, skin, field);
+                let wasInsideField: boolean = context.IsInsideField(lx, ly, skin, field);
+
+                if (wasInsideField && !isInsideField)
+                {
+                    // unpress last cell
+                    let coords = context.GetFieldCoordinates(lx, ly, skin, field);
+                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
+                    {
+                        context.ReDrawCell(context, skin.CLOSED, coords.X, coords.Y);
+                    }
+                }
+                if (!wasInsideField && isInsideField)
+                {
+                    // press cell under cursor
+                    let coords = context.GetFieldCoordinates(x, y, skin, field);
+                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
+                    {
+                        context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                    }
+                }
+                if  (wasInsideField && isInsideField)
+                {
+                    // unpress last cell and press one under cursor
+                    let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
+                    let coords2 = context.GetFieldCoordinates(x, y, skin, field);
+
+                    if (coords1.X != coords2.X || coords1.Y != coords2.X)
+                    {
+                        if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
+                            context.ReDrawCell(context, skin.CLOSED, coords1.X, coords1.Y);
+                        if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
+                            context.ReDrawCell(context, skin.CELL_PRESSED, coords2.X, coords2.Y);
+                    }
+                }
+
+                context.lastPressedXCoord = x;
+                context.lastPressedYCoord = y;
+            }
+        }
+
+        private OnBodyMoveEventListener(event:JQueryEventObject):void
+        {
+            let context = <CanvasFieldDrawer>event.data.context;
+
+            if (!context.isMousePressed)
+                return;
+
+            var rect = context.canvas.getBoundingClientRect();
+            var x = Math.floor(event.clientX - rect.left);
+            var y = Math.floor(event.clientY - rect.top);
+
+            let isInsideCanvas = 
+                event.clientX >= rect.left && event.clientX <= rect.right &&
+                event.clientY >= rect.top && event.clientY <= rect.bottom;
+
+            if (!isInsideCanvas)
+            {
+                context.isMousePressed = false;
+            }
         }
 
         private IsInsideField(x:number, y:number, skin: Skin, field: Field)
