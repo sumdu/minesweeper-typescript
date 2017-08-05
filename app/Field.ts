@@ -1,4 +1,5 @@
 /// <reference path="Cell.ts" />
+/// <reference path="GameStatusEnum.ts" />
 
 namespace App
 {
@@ -138,12 +139,5 @@ namespace App
 				res = GameStatusEnum.InProgress;
 			return res;
 		}
-	}
-
-	export enum GameStatusEnum
-	{
-		Won,
-		Lost,
-		InProgress
 	}
 }

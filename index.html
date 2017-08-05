@@ -7,12 +7,16 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   </head>
   <body>
-    <script src="tsbuild/app.js"></script>
 
-   	<div class="canvas">
-      <canvas id="canvas1" width="300" height="300" style="display:inline-block;" oncontextmenu="return false;"></canvas>
-      <canvas id="canvas_temp" width="180" height="180" style="display:none;"></canvas>
+    <div id="loading">
+      <img src="img/loading.gif" />
     </div>
+    <canvas id="canvas1"></canvas>
+
+    <script src="tsbuild/app.js"></script>
+    <script type="text/javascript">
+      App.Start("canvas1", "loading");
+    </script>
 
   </body>
 </html>

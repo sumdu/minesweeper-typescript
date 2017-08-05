@@ -1,4 +1,5 @@
 /// <reference path="MinesweeperException.ts" />
+/// <reference path="CellStateEnum.ts" />
 
 namespace App
 {
@@ -55,11 +56,5 @@ namespace App
 		}
 	}
 
-	export enum CellStateEnum {
-		Closed,
-		Flagged,
-		Questioned,
-		Open,
-		Exploded
-	}
+
 }
