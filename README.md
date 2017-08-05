@@ -15,12 +15,13 @@ Known issues:
 - when dragging pressed mouse over cells, sometime pressed cell stays pressed after cursor leaves that cell
 
 Todo:
-- bind handler for middle click
-    > verify logic: must be if number inside the cell = number of flags =>
-        > flags correct - open
-        > not correct - blow up
 - remember best scores
+- draw pressed cells for middle button
 
+(done) - bind handler for middle click
+(done)    > verify logic: must be if number inside the cell = number of flags =>
+(done)        > flags correct - open
+(done)        > not correct - blow up
 (done) - redraw smile and pressed cells when dragging mouse
 (done) - add mouse up and down effect on cells
 (done)    > mouse down - pressed effect for cell under cursor

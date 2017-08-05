@@ -68,6 +68,23 @@ namespace App
 			return true;
 		}
 
+		public CountFlaggedNeighbours(x:number, y:number):number
+		{
+			let res = 0;
+			let neighbours = this.GetNeighbours(x,y);
+			for (let i=0; i<3; i++)
+			{
+				for (let j=0; j<3; j++)
+				{
+					if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Flagged)
+					{
+						res++;
+					}
+				}
+			}
+			return res;
+		}
+
 		public ExplodeBombsAround(x:number, y:number):void
 		{
 			let neighbours = this.GetNeighbours(x,y);

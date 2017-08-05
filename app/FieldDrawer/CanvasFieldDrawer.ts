@@ -49,17 +49,20 @@ namespace App.FieldDrawer
             var x = Math.floor(event.clientX - rect.left);
             var y = Math.floor(event.clientY - rect.top);
 
-            if (event.type == "mousedown")
+            if (!context.game.GameOver)
             {
-                context.isMousePressed = true;
-                context.DrawSmiley(skin.SMILE_GUESS);
-                context.lastPressedXCoord = x;
-                context.lastPressedYCoord = y;
-            }
-            else if (event.type == "mouseup")
-            {
-                context.isMousePressed = false;
-                context.DrawSmiley(skin.SMILE_OK);
+                if (event.type == "mousedown")
+                {
+                    context.isMousePressed = true;
+                    context.DrawSmiley(skin.SMILE_GUESS);
+                    context.lastPressedXCoord = x;
+                    context.lastPressedYCoord = y;
+                }
+                else if (event.type == "mouseup")
+                {
+                    context.isMousePressed = false;
+                    context.DrawSmiley(skin.SMILE_OK);
+                }
             }
 
             // Clicked inside FIELD
@@ -331,7 +334,7 @@ namespace App.FieldDrawer
                 context.RecordCurrentFieldState(context);
                 var cel;
                 // Allow middle click only on open cells, which has a number 1..8
-                if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0) {
+                if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0 && cells[x][y].CountBombsAround == field.CountFlaggedNeighbours(x, y)) {
                     if (field.NeighboursAreCorrectlyMarked(x,y)) {
                         // -------------------------
                         if (x > 0 && y > 0 && cells[x-1][y-1].State == CellStateEnum.Closed) {
