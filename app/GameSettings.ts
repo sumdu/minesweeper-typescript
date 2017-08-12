@@ -30,8 +30,8 @@ namespace App
 
 	export class TestGameSettings implements IGameSettings
 	{
-		public get Width(): number {return 20};
-		public get Height(): number {return 10};
-		public get BombCount(): number {return 2};
+		public get Width(): number {return 30};
+		public get Height(): number {return 20};
+		public get BombCount(): number {return 1};
 	}
 }

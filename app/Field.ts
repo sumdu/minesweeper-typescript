@@ -10,7 +10,17 @@ namespace App
 		get Width():number {return this.Cells.length;}
 		get Height():number {return this.Cells[0].length;}
 
+		public GetCellWithNeighbours(x: number, y: number)
+		{
+			return this.GetCellNeighbours(x, y, true);
+		}
+
 		public GetNeighbours(x: number, y: number):Cell[][] 
+		{
+			return this.GetCellNeighbours(x, y, false);
+		}
+
+		public GetCellNeighbours(x: number, y: number, includeCenter: boolean):Cell[][] 
 		{
 			let w = this.Width;
 			let h = this.Height;
@@ -29,7 +39,8 @@ namespace App
 			if (x != 0    				) 	res[0][1] = this.Cells[x-1][y]  ;
 			if (x != 0 && y != h - 1  	) 	res[0][2] = this.Cells[x-1][y+1];
 			if (y != 0 	 				) 	res[1][0] = this.Cells[x]  [y-1];
-			if (y != h - 1  			) 	res[1][1] = this.Cells[x]  [y+1];
+			if (includeCenter) 				res[1][1] = this.Cells[x]  [y]; 
+			if (y != h - 1  			) 	res[1][2] = this.Cells[x]  [y+1];
 			if (x != w - 1 && y != 0  	) 	res[2][0] = this.Cells[x+1][y-1];
 			if (x != w - 1 	 			) 	res[2][1] = this.Cells[x+1][y]  ;
 			if (x != w - 1 && y != h-1 	) 	res[2][2] = this.Cells[x+1][y+1];

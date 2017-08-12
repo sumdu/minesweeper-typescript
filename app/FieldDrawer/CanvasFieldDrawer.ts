@@ -7,7 +7,8 @@ namespace App.FieldDrawer
         private previousState : CellStateEnum[][];
         private timer : number;
 
-        private isMousePressed : boolean;
+        private isLeftMousePressed : boolean;
+        private isMiddleMousePressed : boolean;
         private lastPressedXCoord : number = 0;
         private lastPressedYCoord : number = 0;
 
@@ -53,14 +54,22 @@ namespace App.FieldDrawer
             {
                 if (event.type == "mousedown")
                 {
-                    context.isMousePressed = true;
+                    if (event.which == 1)
+                    {
+                        context.isLeftMousePressed = true;
+                    }
+                    else if (event.which == 2)
+                    {
+                        context.isMiddleMousePressed = true;
+                    }
                     context.DrawSmiley(skin.SMILE_GUESS);
                     context.lastPressedXCoord = x;
                     context.lastPressedYCoord = y;
                 }
                 else if (event.type == "mouseup")
                 {
-                    context.isMousePressed = false;
+                    context.isLeftMousePressed = false;
+                    context.isMiddleMousePressed = false;
                     context.DrawSmiley(skin.SMILE_OK);
                 }
             }
@@ -85,10 +94,14 @@ namespace App.FieldDrawer
                         context.ProcessRightClick(coords, context);
                     }
                 }
-                else if (event.which == 1 /* left */ && event.type == "mousedown")
+                else if (event.type == "mousedown" && event.which == 1) // left
                 {
                     if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
                         context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                }
+                else if (event.type == "mousedown" && event.which == 2) // middle
+                {
+                    context.DrawPressedCells(context, coords.X, coords.Y);                    
                 }
             }
 
@@ -99,7 +112,6 @@ namespace App.FieldDrawer
                 context.DrawSmiley(skin.SMILE_PRESSED);
                 // draw pressed smiley
             }
-
             if (event.type == "mouseup" && context.IsInsideSmiley(x, y, skin, field))
             {
                 // start new game
@@ -120,14 +132,13 @@ namespace App.FieldDrawer
                 // same as CanvasFieldDrawer.Init method
                 context.Draw();
             }
-
             return false;
         }
 
         private OnMoveEventListener(event:JQueryEventObject):void
         {
             let context = <CanvasFieldDrawer>event.data.context;
-            if (context.isMousePressed)
+            if (context.isLeftMousePressed || context.isMiddleMousePressed)
             {
                 let field = context.field;
                 let skin = context.skin;
@@ -140,49 +151,72 @@ namespace App.FieldDrawer
                 let lx = context.lastPressedXCoord;
                 let ly = context.lastPressedYCoord;
 
-
-                let isInsideSmiley: boolean = context.IsInsideSmiley(x, y, skin, field);
-                let wasInsideSmiley: boolean = context.IsInsideSmiley(lx, ly, skin, field);
-
-                if (wasInsideSmiley && !isInsideSmiley)
-                    context.DrawSmiley(context.skin.SMILE_OK);
-                if (!wasInsideSmiley && isInsideSmiley)
-                    context.DrawSmiley(context.skin.SMILE_PRESSED);
-
-
                 let isInsideField: boolean = context.IsInsideField(x, y, skin, field);
                 let wasInsideField: boolean = context.IsInsideField(lx, ly, skin, field);
 
-                if (wasInsideField && !isInsideField)
+                if (context.isLeftMousePressed)
                 {
-                    // unpress last cell
-                    let coords = context.GetFieldCoordinates(lx, ly, skin, field);
-                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
-                    {
-                        context.ReDrawCell(context, skin.CLOSED, coords.X, coords.Y);
-                    }
-                }
-                if (!wasInsideField && isInsideField)
-                {
-                    // press cell under cursor
-                    let coords = context.GetFieldCoordinates(x, y, skin, field);
-                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
-                    {
-                        context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
-                    }
-                }
-                if  (wasInsideField && isInsideField)
-                {
-                    // unpress last cell and press one under cursor
-                    let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
-                    let coords2 = context.GetFieldCoordinates(x, y, skin, field);
+                    let isInsideSmiley: boolean = context.IsInsideSmiley(x, y, skin, field);
+                    let wasInsideSmiley: boolean = context.IsInsideSmiley(lx, ly, skin, field);
 
-                    if (coords1.X != coords2.X || coords1.Y != coords2.X)
+                    if (wasInsideSmiley && !isInsideSmiley)
+                        context.DrawSmiley(context.skin.SMILE_OK);
+                    if (!wasInsideSmiley && isInsideSmiley)
+                        context.DrawSmiley(context.skin.SMILE_PRESSED);
+
+                    if (wasInsideField && !isInsideField)
                     {
-                        if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
-                            context.ReDrawCell(context, skin.CLOSED, coords1.X, coords1.Y);
-                        if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
-                            context.ReDrawCell(context, skin.CELL_PRESSED, coords2.X, coords2.Y);
+                        // unpress last cell
+                        let coords = context.GetFieldCoordinates(lx, ly, skin, field);
+                        if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
+                        {
+                            context.ReDrawCell(context, skin.CLOSED, coords.X, coords.Y);
+                        }
+                    }
+                    else if (!wasInsideField && isInsideField)
+                    {
+                        // press cell under cursor
+                        let coords = context.GetFieldCoordinates(x, y, skin, field);
+                        if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
+                        {
+                            context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                        }
+                    }
+                    else if  (wasInsideField && isInsideField)
+                    {
+                        // unpress last cell and press one under cursor
+                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
+                        let coords2 = context.GetFieldCoordinates(x, y, skin, field);
+
+                        if (coords1.X != coords2.X || coords1.Y != coords2.X)
+                        {
+                            if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
+                                context.ReDrawCell(context, skin.CLOSED, coords1.X, coords1.Y);
+                            if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
+                                context.ReDrawCell(context, skin.CELL_PRESSED, coords2.X, coords2.Y);
+                        }
+                    }
+                }
+
+                if (context.isMiddleMousePressed)
+                {
+                    if  (wasInsideField && isInsideField)
+                    {
+                        // unpress last cell and press one under cursor
+                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
+                        let coords2 = context.GetFieldCoordinates(x, y, skin, field);
+
+                        if (coords1.X != coords2.X || coords1.Y != coords2.X)
+                        {
+                            context.DrawDepressedCells(context, coords1.X, coords1.Y);
+                            context.DrawPressedCells(context, coords2.X, coords2.Y);
+                        }
+                    }
+                    else if (wasInsideField && !isInsideField)
+                    {
+                        // unpress last cell and press one under cursor
+                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
+                        context.DrawDepressedCells(context, coords1.X, coords1.Y);
                     }
                 }
 
@@ -196,7 +230,7 @@ namespace App.FieldDrawer
             let context = <CanvasFieldDrawer>event.data.context;
             let skin = context.skin;
 
-            if (!context.isMousePressed)
+            if (!context.isLeftMousePressed && !context.isMiddleMousePressed)
                 return;
 
             var rect = context.canvas.getBoundingClientRect();
@@ -209,7 +243,8 @@ namespace App.FieldDrawer
 
             if (!isInsideCanvas)
             {
-                context.isMousePressed = false;
+                context.isLeftMousePressed = false;
+                context.isMiddleMousePressed = false;
                 context.DrawSmiley(skin.SMILE_OK);
             }
         }
@@ -327,6 +362,8 @@ namespace App.FieldDrawer
 
             let w = field.Width;
             let h = field.Height;
+
+            context.DrawDepressedCells(context, x, y);
 
             // If game is over then then nothing happens on click
             // and field's paint method is never called.
@@ -838,6 +875,52 @@ namespace App.FieldDrawer
             let xPos = skin.FIELD_START_POS_X + x * skin.CELL_WIDTH;
             let yPos = skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT;
             context2d.putImageData(img, xPos, yPos);
+        }
+
+        DrawPressedCells(context: CanvasFieldDrawer, x:  number, y: number)
+        {
+            let field = context.field;
+            let skin = context.skin;
+
+            let neighbours = field.GetCellWithNeighbours(x, y);
+                    
+            for (let i=0; i<3; i++)
+            {
+                for (let j=0; j<3; j++)
+                {
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) // TODO: it should also work for Questioned
+                    {
+                        context.ReDrawCell(context, skin.CELL_PRESSED, x+i-1, y+j-1);
+                    }
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) // TODO: it should also work for Questioned
+                    {
+                        context.ReDrawCell(context, skin.QUESTION_PRESSED, x+i-1, y+j-1);
+                    }
+                }
+            }
+        }
+
+        DrawDepressedCells(context: CanvasFieldDrawer, x:  number, y: number)
+        {
+            let field = context.field;
+            let skin = context.skin;
+
+            let neighbours = field.GetCellWithNeighbours(x, y);
+                    
+            for (let i=0; i<3; i++)
+            {
+                for (let j=0; j<3; j++)
+                {
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) // TODO: it should also work for Questioned
+                    {
+                        context.ReDrawCell(context, skin.CLOSED, x+i-1, y+j-1);
+                    }
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) // TODO: it should also work for Questioned
+                    {
+                        context.ReDrawCell(context, skin.QUESTION, x+i-1, y+j-1);
+                    }
+                }
+            }
         }
     }
 }

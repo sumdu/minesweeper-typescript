@@ -13,7 +13,7 @@ namespace App
         public readonly WRONG_FLAG: ImageData;
         public readonly EXPLODED: ImageData;
         public readonly QUESTION: ImageData;
-        public readonly QUESTION_OPENED: ImageData;
+        public readonly QUESTION_PRESSED: ImageData;
         public readonly DIGITS: ImageData[];
         public readonly SMILE_OK: ImageData;
         public readonly SMILE_GUESS: ImageData;
@@ -96,7 +96,7 @@ namespace App
                             this.QUESTION = img;
                             break;
                         case (7):
-                            this.QUESTION_OPENED = img;
+                            this.QUESTION_PRESSED = img;
                             break;
                     }
                 }

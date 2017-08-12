@@ -12,12 +12,12 @@ typings install
 typings install dt~jquery --global --save
 
 Known issues:
-- when dragging pressed mouse over cells, sometime pressed cell stays pressed after cursor leaves that cell
+- when dragging pressed mouse over cells, sometime pressed cell stays pressed after cursor leaves that cell (maybe, related to how onmove event is fired, newer coords fired, then older)
 
 Todo:
 - remember best scores
-- draw pressed cells for middle button
 
+(done) - draw pressed cells for middle button
 (done) - bind handler for middle click
 (done)    > verify logic: must be if number inside the cell = number of flags =>
 (done)        > flags correct - open
