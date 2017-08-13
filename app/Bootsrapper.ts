@@ -4,14 +4,14 @@ namespace App
 {
     export class Bootsrapper
     {
-        private previousState : CellStateEnum[][];
-        private timer : number;
-        private game: Game;
+        public previousState : CellStateEnum[][];
+        public timer : number;
+        public game: Game;
 
-        private isLeftMousePressed : boolean;
-        private isMiddleMousePressed : boolean;
-        private lastPressedXCoord : number = 0;
-        private lastPressedYCoord : number = 0;
+        public isLeftMousePressed : boolean;
+        public isMiddleMousePressed : boolean;
+        public lastPressedXCoord : number = 0;
+        public lastPressedYCoord : number = 0;
 
         public drawer : Drawer.CanvasDrawer;
 
@@ -33,265 +33,19 @@ namespace App
         {
             let that = this;
             
-            $(this.canvas).off("mousedown",this.OnClickEventListener);
-            $(this.canvas).off("mouseup",this.OnClickEventListener);
-            $(this.canvas).off("mousemove",this.OnMoveEventListener);
-            $(this.canvas).off("contextmenu", this.OnClickEventListener);
-            $(document).off("mousemove", this.OnBodyMoveEventListener);
+            $(this.canvas).off("mousedown",MouseEventHandlers.OnClickEventListener);
+            $(this.canvas).off("mouseup",MouseEventHandlers.OnClickEventListener);
+            $(this.canvas).off("mousemove",MouseEventHandlers.OnMoveEventListener);
+            $(this.canvas).off("contextmenu", MouseEventHandlers.OnClickEventListener);
+            $(document).off("mousemove", MouseEventHandlers.OnBodyMoveEventListener);
 
-            $(this.canvas).on("mousedown", {context: that}, this.OnClickEventListener );
-            $(this.canvas).on("mouseup", {context: that}, this.OnClickEventListener );
-            $(this.canvas).on("mousemove", {context: that}, this.OnMoveEventListener );
-            $(this.canvas).on("contextmenu", {context: that}, this.OnClickEventListener);
-            $(document).on("mousemove", {context: that}, this.OnBodyMoveEventListener );
+            $(this.canvas).on("mousedown", {context: that}, MouseEventHandlers.OnClickEventListener );
+            $(this.canvas).on("mouseup", {context: that}, MouseEventHandlers.OnClickEventListener );
+            $(this.canvas).on("mousemove", {context: that}, MouseEventHandlers.OnMoveEventListener );
+            $(this.canvas).on("contextmenu", {context: that}, MouseEventHandlers.OnClickEventListener);
+            $(document).on("mousemove", {context: that}, MouseEventHandlers.OnBodyMoveEventListener );
         }
-
-        OnClickEventListener(event:JQueryEventObject)
-        {
-            let context = <Bootsrapper>event.data.context;
-            let field = context.field;
-            let skin = context.skin;
-            let canvas = context.canvas;
-
-            var rect = canvas.getBoundingClientRect();
-            var x = Math.floor(event.clientX - rect.left);
-            var y = Math.floor(event.clientY - rect.top);
-
-            if (!context.game.GameOver)
-            {
-                if (event.type == "mousedown")
-                {
-                    if (event.which == 1)
-                    {
-                        context.isLeftMousePressed = true;
-                    }
-                    else if (event.which == 2)
-                    {
-                        context.isMiddleMousePressed = true;
-                    }
-                    context.drawer.DrawSmileyGuess();
-                    context.lastPressedXCoord = x;
-                    context.lastPressedYCoord = y;
-                }
-                else if (event.type == "mouseup")
-                {
-                    context.isLeftMousePressed = false;
-                    context.isMiddleMousePressed = false;
-                    context.drawer.DrawSmileyOk();
-                }
-            }
-
-            // Clicked inside FIELD
-
-            if (!context.game.GameOver && context.IsInsideField(x, y, skin, field))
-            {
-                let coords = context.GetFieldCoordinates(x, y, skin, field);
-                if (event.type == "mouseup")
-                {
-                    if (event.which == 1) // left mouse
-                    {
-                        context.ProcessLeftClick(coords, context);
-                    }
-                    else if (event.which == 2) 
-                    {
-                        context.ProcessMiddleClick(coords, context);
-                    }
-                    else if (event.which == 3) // right mouse
-                    {
-                        context.ProcessRightClick(coords, context);
-                    }
-                }
-                else if (event.type == "mousedown" && event.which == 1) // left
-                {
-                    if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
-                        context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
-                }
-                else if (event.type == "mousedown" && event.which == 2) // middle
-                {
-                    context.DrawPressedCells(context, coords.X, coords.Y);                    
-                }
-            }
-
-            // Clicked inside SMILEY 
-
-            if (event.type == "mousedown" && context.IsInsideSmiley(x, y, skin, field))
-            {
-                context.drawer.DrawSmileyPressed();
-                // draw pressed smiley
-            }
-            if (event.type == "mouseup" && context.IsInsideSmiley(x, y, skin, field))
-            {
-                // start new game
-                // clear timer interval
-                if (context.timer) {
-                    clearInterval(context.timer);
-                    context.timer = undefined;
-                }
-                // same as initialized by CanvasFieldDrawer constructor
-                let gameSettings :IGameSettings = {
-                    Width: context.field.Width,
-                    Height: context.field.Height,
-                    BombCount: context.field.TotalCountOfBombs()
-                };
-                let f = new FieldBuilder().Build(gameSettings);
-                context.field = f;
-                context.game = new Game();
-                // same as CanvasFieldDrawer.Init method
-                context.Draw();
-            }
-            return false;
-        }
-
-        private OnMoveEventListener(event:JQueryEventObject):void
-        {
-            let context = <Bootsrapper>event.data.context;
-            if (context.isLeftMousePressed || context.isMiddleMousePressed)
-            {
-                let field = context.field;
-                let skin = context.skin;
-                let canvas = context.canvas;
-
-                var rect = canvas.getBoundingClientRect();
-                var x = Math.floor(event.clientX - rect.left);
-                var y = Math.floor(event.clientY - rect.top);
-
-                let lx = context.lastPressedXCoord;
-                let ly = context.lastPressedYCoord;
-
-                let isInsideField: boolean = context.IsInsideField(x, y, skin, field);
-                let wasInsideField: boolean = context.IsInsideField(lx, ly, skin, field);
-
-                if (context.isLeftMousePressed)
-                {
-                    let isInsideSmiley: boolean = context.IsInsideSmiley(x, y, skin, field);
-                    let wasInsideSmiley: boolean = context.IsInsideSmiley(lx, ly, skin, field);
-
-                    if (wasInsideSmiley && !isInsideSmiley)
-                        context.drawer.DrawSmileyOk();
-                    if (!wasInsideSmiley && isInsideSmiley)
-                        context.drawer.DrawSmileyPressed();
-
-                    if (wasInsideField && !isInsideField)
-                    {
-                        // unpress last cell
-                        let coords = context.GetFieldCoordinates(lx, ly, skin, field);
-                        if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
-                        {
-                            context.drawer.ReDrawCellClosed(coords.X, coords.Y);
-                        }
-                    }
-                    else if (!wasInsideField && isInsideField)
-                    {
-                        // press cell under cursor
-                        let coords = context.GetFieldCoordinates(x, y, skin, field);
-                        if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
-                        {
-                            context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
-                        }
-                    }
-                    else if  (wasInsideField && isInsideField)
-                    {
-                        // unpress last cell and press one under cursor
-                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
-                        let coords2 = context.GetFieldCoordinates(x, y, skin, field);
-
-                        if (coords1.X != coords2.X || coords1.Y != coords2.X)
-                        {
-                            if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
-                                context.drawer.ReDrawCellClosed(coords1.X, coords1.Y);
-                            if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
-                                context.drawer.ReDrawCellClosedPressed(coords2.X, coords2.Y);
-                        }
-                    }
-                }
-
-                if (context.isMiddleMousePressed)
-                {
-                    if  (wasInsideField && isInsideField)
-                    {
-                        // unpress last cell and press one under cursor
-                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
-                        let coords2 = context.GetFieldCoordinates(x, y, skin, field);
-
-                        if (coords1.X != coords2.X || coords1.Y != coords2.X)
-                        {
-                            context.DrawDepressedCells(context, coords1.X, coords1.Y);
-                            context.DrawPressedCells(context, coords2.X, coords2.Y);
-                        }
-                    }
-                    else if (wasInsideField && !isInsideField)
-                    {
-                        // unpress last cell and press one under cursor
-                        let coords1 = context.GetFieldCoordinates(lx, ly, skin, field);
-                        context.DrawDepressedCells(context, coords1.X, coords1.Y);
-                    }
-                }
-
-                context.lastPressedXCoord = x;
-                context.lastPressedYCoord = y;
-            }
-        }
-
-        private OnBodyMoveEventListener(event:JQueryEventObject):void
-        {
-            let context = <Bootsrapper>event.data.context;
-            let skin = context.skin;
-
-            if (!context.isLeftMousePressed && !context.isMiddleMousePressed)
-                return;
-
-            var rect = context.canvas.getBoundingClientRect();
-            var x = Math.floor(event.clientX - rect.left);
-            var y = Math.floor(event.clientY - rect.top);
-
-            let isInsideCanvas = 
-                event.clientX >= rect.left && event.clientX <= rect.right &&
-                event.clientY >= rect.top && event.clientY <= rect.bottom;
-
-            if (!isInsideCanvas)
-            {
-                context.isLeftMousePressed = false;
-                context.isMiddleMousePressed = false;
-                context.drawer.DrawSmileyOk();
-            }
-        }
-
-        private IsInsideField(x:number, y:number, skin: Skin, field: Field)
-        {
-            if (x >= skin.FIELD_START_POS_X && y >= skin.FIELD_START_POS_Y && x < skin.FieldEndPosX(field.Width) && y < skin.FieldEndPosY(field.Height))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private IsInsideSmiley(x: number, y:number, skin: Skin, field: Field)
-        {
-            const smileyXPos = skin.SmileyXPos(field.Width);
-            if (x > smileyXPos && y > skin.SMILEY_Y_POS && x <= smileyXPos + skin.SMILEY_WIDTH && y <= skin.SMILEY_Y_POS + skin.SMILEY_HEIGHT)
-            {
-                return true
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private GetFieldCoordinates(x: number, y: number, skin: Skin, field: Field):IFieldCoordinate 
-        {
-            // Account for painted borders inside <canvas>
-            let x_field = x - skin.FIELD_START_POS_X;
-            let y_field = y - skin.FIELD_START_POS_Y;
-            return {
-                    X: Math.floor(x_field/16),
-                    Y: Math.floor(y_field/16)
-                };
-        }
-
+        
         private GameStatusChanged(context: Bootsrapper):void
         {
             let status = context.field.GetGameStatus();
@@ -317,7 +71,7 @@ namespace App
 		    }
         }
 
-        private ProcessLeftClick(coords: IFieldCoordinate, context: Bootsrapper):void
+        public ProcessLeftClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let game = context.game;
             let skin = context.skin;
@@ -359,7 +113,7 @@ namespace App
 			//}
         }
 
-        private ProcessMiddleClick(coords: IFieldCoordinate, context: Bootsrapper):void
+        public ProcessMiddleClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let game = context.game;
             let field = context.field;
@@ -409,7 +163,7 @@ namespace App
             }
         }
 
-        private ProcessRightClick(coords: IFieldCoordinate, context: Bootsrapper):void
+        public ProcessRightClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let x = coords.X;
             let y = coords.Y;
@@ -463,6 +217,7 @@ namespace App
             }
         }
 
+        // click on empty cell => empty area needs to open
         private OpenRange(x:number, y: number, context:Bootsrapper):void
         {
             let field = context.field;
@@ -588,7 +343,7 @@ namespace App
         {
             let field = this.field;
             
-            // make sure canvas HTML has right size
+            // resize canvas HTML element
             this.canvas.height = field.Height * 16 + 54 + 11;
             this.canvas.width  = field.Width * 16 + 12 + 12;
 
@@ -598,7 +353,6 @@ namespace App
 
         RedrawTimeElapsed(context:Bootsrapper):void
         {
-            let field = context.field;
             let game = context.game;
 
             let t :string;
@@ -616,9 +370,7 @@ namespace App
         RedrawAllCells(context: Bootsrapper):void
         {
             let field = context.field;
-            let skin = context.skin;
             let prevState = context.previousState;
-            let context2d = context.canvas.getContext("2d");
 
             // Check condition end of game, becuase it results
             // in a different drawing algorythm. E.g., if game is over then all bombs
@@ -650,10 +402,7 @@ namespace App
         // when middle mouse down on cell (x,y)
         DrawPressedCells(context: Bootsrapper, x:  number, y: number)
         {
-            let field = context.field;
-            let skin = context.skin;
-
-            let neighbours = field.GetCellWithNeighbours(x, y);
+            let neighbours = this.field.GetCellWithNeighbours(x, y);
 
             for (let i=0; i<3; i++)
             {
@@ -674,10 +423,7 @@ namespace App
         // when middle mouse up on cell (x,y)
         DrawDepressedCells(context: Bootsrapper, x:  number, y: number)
         {
-            let field = context.field;
-            let skin = context.skin;
-
-            let neighbours = field.GetCellWithNeighbours(x, y);
+            let neighbours = this.field.GetCellWithNeighbours(x, y);
                     
             for (let i=0; i<3; i++)
             {
