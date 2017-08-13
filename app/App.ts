@@ -9,18 +9,12 @@ namespace App
 {
     export function Start(canvasId: string, loadingMsgId?: string):void
     {
-        let f = new FieldBuilder().Build(new TestGameSettings());
-        
-        // draw field to console
-        //let d = new FieldDrawer.ConsoleFieldDrawer();
-        //d.Draw(f); 
+        let field = new FieldBuilder().Build(new TestGameSettings());
 
         SkinLoader.LoadSimpleSkin(loadingMsgId, function(skin) {
-            // initialize field drawer
             let canvas = <HTMLCanvasElement>document.getElementById(canvasId);
-            let g = new Game();
-            let cd = new Bootsrapper(canvas, skin, f);
-            cd.Bootstrap();
+            let bootstrapper = new Bootsrapper(canvas, skin, field);
+            bootstrapper.Bootstrap();
         });
     }
 }

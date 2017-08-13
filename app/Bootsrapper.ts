@@ -344,8 +344,8 @@ namespace App
             let field = this.field;
             
             // resize canvas HTML element
-            this.canvas.height = field.Height * 16 + 54 + 11;
-            this.canvas.width  = field.Width * 16 + 12 + 12;
+            this.canvas.height = (field.Height * this.skin.CELL_WIDTH) + 54 + 11;
+            this.canvas.width  = (field.Width * this.skin.CELL_HEIGHT) + 12 + 12;
 
             this.drawer.InitialDraw();  
             this.drawer.DrawBombsLeftCounter(field.TotalCountOfBombs());
