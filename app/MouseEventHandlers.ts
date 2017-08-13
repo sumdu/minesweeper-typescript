@@ -182,7 +182,7 @@ namespace App
                     }
                     else if (event.which == 2) 
                     {
-                        drawer.DrawDepressedCells(context, x, y);
+                        drawer.DrawDepressedCells(context, coords.X, coords.Y);
 
                         clickResult = FieldClickProcessor.ProcessMiddleClick(coords, field);
                     }

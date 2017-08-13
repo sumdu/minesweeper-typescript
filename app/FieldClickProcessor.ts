@@ -4,12 +4,8 @@ namespace App
 	{
         public static ProcessLeftClick(coords: IFieldCoordinate, field: Field):FieldClickResult
         {
-            // let game = context.GameContext.game;
-            // let skin = context.GameContext.skin;
-            //let field = context.GameContext.field;
             let cells = field.Cells;
-            // let drawer = context.GameContext.drawer;
-            
+           
             let x = coords.X;
             let y = coords.Y;
             let res = new FieldClickResult();
@@ -18,44 +14,39 @@ namespace App
             res.ChangedCellsFlags = this.CreateEmptyFlagArray(field.Width, field.Height);
             res.GameStatus = GameStatusEnum.InProgress;
 
-            
-			// If game is over then then nothing happens on click
-			// and field's paint method is never called.
-			//if (!game.GameOver) {
-				let stateBeforeClick = this.RecordCurrentFieldState(field.Cells);
-				// Clicked with left button and cell is closed
-				if (cells[x][y].State == CellStateEnum.Closed) {
-					// Click on bomb.
-					if (cells[x][y].HasBomb) 
-                    {
-                        cells[x][y].State = CellStateEnum.Exploded;
-                        
-                        res.GameStatus = GameStatusEnum.Lost;
-                        res.HasChangedCells = true;
-                        res.ChangedCellsFlags[x][y] = true;
-					}
-					// Click on non-empty cell.
-					else if (cells[x][y].CountBombsAround > 0) 
-                    {
-                        cells[x][y].State = CellStateEnum.Open;
-                        
-                        res.HasChangedCells = true;
-                        res.ChangedCellsFlags[x][y] = true;
-					}
-					// Click on empty cell flags a range and then opens them.
-					else if (cells[x][y].CountBombsAround == 0) 
-                    {
-                        this.OpenRange(x, y, field); 
-                        let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
-
-                        res.HasChangedCells = true;
-                        res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
-					}
+            let stateBeforeClick = this.RecordCurrentFieldState(field.Cells);
+            // Clicked with left button and cell is closed
+            if (cells[x][y].State == CellStateEnum.Closed) 
+            {
+                // Click on bomb
+                if (cells[x][y].HasBomb) 
+                {
+                    cells[x][y].State = CellStateEnum.Exploded;
+                    
+                    res.GameStatus = GameStatusEnum.Lost;
+                    res.HasChangedCells = true;
+                    res.ChangedCellsFlags[x][y] = true;
                 }
-                
-				
-            //}
-            
+                // Click on non-empty cell
+                else if (cells[x][y].CountBombsAround > 0) 
+                {
+                    cells[x][y].State = CellStateEnum.Open;
+                    
+                    res.GameStatus = field.GetGameStatus(); // when last cell opened game status changes
+                    res.HasChangedCells = true;
+                    res.ChangedCellsFlags[x][y] = true;
+                }
+                // Click on empty cell flags a range and then opens them.
+                else if (cells[x][y].CountBombsAround == 0) 
+                {
+                    this.OpenRange(x, y, field); 
+                    let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
+
+                    res.GameStatus = field.GetGameStatus(); // when last cell opened game status changes
+                    res.HasChangedCells = true;
+                    res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
+                }
+            }
             return res;
         }
 
@@ -72,49 +63,46 @@ namespace App
             let w = field.Width;
             let h = field.Height;
 
-            // If game is over then then nothing happens on click
-            // and field's paint method is never called.
-            //if (!this.gameOver) {
-                let stateBeforeClick = this.RecordCurrentFieldState(field.Cells);
+            let stateBeforeClick = this.RecordCurrentFieldState(field.Cells);
 
-                // Allow middle click only on open cells, which has a number 1..8
-                if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0 && cells[x][y].CountBombsAround == field.CountFlaggedNeighbours(x, y)) {
-                    if (field.NeighboursAreCorrectlyMarked(x,y)) 
+            // Allow middle click only on open cells, which has a number 1..8
+            if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0 && cells[x][y].CountBombsAround == field.CountFlaggedNeighbours(x, y)) 
+            {
+                if (field.NeighboursAreCorrectlyMarked(x,y)) 
+                {
+                    let neighbours = field.GetNeighbours(x,y);
+                    for (let i=-1; i<2; i++)
                     {
-                        let neighbours = field.GetNeighbours(x,y);
-                        for (let i=-1; i<2; i++)
+                        for (let j=-1; j<2; j++)
                         {
-                            for (let j=-1; j<2; j++)
-                            {
-                                let cell = neighbours[i+1][j+1];
-                                if (cell != null && cell.State == CellStateEnum.Closed)
-                                    if (cell.CountBombsAround > 0) {
-                                        cell.State = CellStateEnum.Open;
-                                    }
-                                    else if (cell.CountBombsAround == 0) {
-                                        this.OpenRange(x+i, y+i, field); 
-                                    }
-                            }
+                            let cell = neighbours[i+1][j+1];
+                            if (cell != null && cell.State == CellStateEnum.Closed)
+                                if (cell.CountBombsAround > 0) {
+                                    cell.State = CellStateEnum.Open;
+                                }
+                                else if (cell.CountBombsAround == 0) {
+                                    this.OpenRange(x+i, y+i, field); 
+                                }
                         }
-                        let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
-                        
-                        res.HasChangedCells = true;
-                        res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
                     }
-                    // Not all bombs around are marked correctly
-                    // game overs and wrongly marked bombs explode.
-                    else 
-                    {
-                        field.ExplodeBombsAround(x, y);
-                        let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
+                    let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
+                    
+                    res.HasChangedCells = true;
+                    res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
+                }
+                // Not all bombs around are marked correctly
+                // game overs and wrongly marked bombs explode.
+                else 
+                {
+                    field.ExplodeBombsAround(x, y);
+                    let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
 
-                        res.GameStatus = GameStatusEnum.Lost;
-                        res.HasChangedCells = true;
-                        res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
-                    }
-                //}
-                return res;
+                    res.GameStatus = GameStatusEnum.Lost;
+                    res.HasChangedCells = true;
+                    res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
+                }
             }
+            return res;
         }
 
         public static ProcessRightClick(coords: IFieldCoordinate, field: Field):FieldClickResult

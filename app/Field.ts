@@ -29,7 +29,7 @@ namespace App
 			for (let i=0; i<3; i++)
 			{
 				res[i] = [];
-				for (let j=3; j<h; j++)
+				for (let j=0; j<3; j++)
 				{
 					res[i][j] = null;
 				}

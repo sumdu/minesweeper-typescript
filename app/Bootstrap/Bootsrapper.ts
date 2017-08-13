@@ -8,20 +8,8 @@ namespace App
 
         public constructor(canvas: HTMLCanvasElement, skin: Skin, field: Field) 
         {
-            let context2d = canvas.getContext("2d");
-            let drawer  = new Drawer.CanvasDrawer(context2d, skin, field.Width, field.Height);
-
             this.context = {
-                GameContext: {
-                    canvas: canvas,
-                    skin: skin,
-                    field: field,
-                    game: new Game(),
-            
-                    //previousState : null,
-                    timer : null,
-                    drawer : drawer
-                },
+                GameContext: new GameContext(canvas, skin, field),
                 MouseContext: new MouseContext()
             }
         }
@@ -72,19 +60,18 @@ namespace App
             // clear timer interval before staring a new game
             if (gameContext.timer) {
                 clearInterval(gameContext.timer);
-                gameContext.timer = undefined;
             }
 
-            // same as initialized by CanvasFieldDrawer constructor
+            // reuse existings game options
             let gameSettings :IGameSettings = {
                 Width: gameContext.field.Width,
                 Height: gameContext.field.Height,
                 BombCount: gameContext.field.TotalCountOfBombs()
             };
-            let f = new FieldBuilder().Build(gameSettings);
 
-            gameContext.field = f;
+            gameContext.field = new FieldBuilder().Build(gameSettings);
             gameContext.game = new Game();
+            gameContext.timer = undefined;
             
             bootstrapper.InitializeCanvas();
         }
