@@ -1,4 +1,4 @@
-/// <reference path="../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../typings/globals/jquery/index.d.ts" />
 
 namespace App
 {
@@ -26,16 +26,16 @@ namespace App
         Bootstrap():void
         {
             this.BindEventListeners();
-            this.Draw();
+            this.InitializeCanvas();
         }
 
         BindEventListeners(): void 
         {
             let that = this;
             
-            $(this.canvas).off("mousedown",MouseEventHandlers.OnClickEventListener);
-            $(this.canvas).off("mouseup",MouseEventHandlers.OnClickEventListener);
-            $(this.canvas).off("mousemove",MouseEventHandlers.OnMoveEventListener);
+            $(this.canvas).off("mousedown", MouseEventHandlers.OnClickEventListener);
+            $(this.canvas).off("mouseup", MouseEventHandlers.OnClickEventListener);
+            $(this.canvas).off("mousemove", MouseEventHandlers.OnMoveEventListener);
             $(this.canvas).off("contextmenu", MouseEventHandlers.OnClickEventListener);
             $(document).off("mousemove", MouseEventHandlers.OnBodyMoveEventListener);
 
@@ -86,7 +86,7 @@ namespace App
 				// For field with width 6 columns or less dont paint bombs and time counters.
                 if (skin.CanDrawTimers(field.Width))
                 {
-                    this.timer = setInterval(function(){ context.RedrawTimeElapsed(context) }, 1000);
+                    this.timer = setInterval(function(){ context.UpdateTimer(context) }, 1000);
                 }
 			}
 			// If game is over then then nothing happens on click
@@ -222,29 +222,28 @@ namespace App
         {
             let field = context.field;
             let cells = field.Cells;
-            let processedFlags: boolean[][] = [];
+            let flagged: boolean[][] = [];
 
             // create an array to hold processed flags
             for (let i = 0; i < field.Width; i++)
             {
-                processedFlags[i] = [];
+                flagged[i] = [];
                 for (let j = 0; j < field.Height; j++) 
                 {
-                    processedFlags[i][j] = false;
+                    flagged[i][j] = false;
                 }
             }
 
-            context.FlagRange(x, y, processedFlags, context);
+            context.FlagRange(x, y, flagged, context);
 
             for (let i = 0; i < field.Width; i++)
             {
                 for (let j = 0; j < field.Height; j++) 
                 {
-                    if (processedFlags[i][j] && cells[i][j].State == CellStateEnum.Closed) 
+                    if (flagged[i][j] && cells[i][j].State == CellStateEnum.Closed) 
                     {
 					    cells[i][j].State = CellStateEnum.Open;
                     }
-                    processedFlags[i][j] = false; // not really required here...
                 }
             }
         }
@@ -339,7 +338,7 @@ namespace App
                 }
 	    }
 
-        Draw():void
+        InitializeCanvas():void
         {
             let field = this.field;
             
@@ -351,7 +350,7 @@ namespace App
             this.drawer.DrawBombsLeftCounter(field.TotalCountOfBombs());
         }
 
-        RedrawTimeElapsed(context:Bootsrapper):void
+        UpdateTimer(context:Bootsrapper):void
         {
             let game = context.game;
 

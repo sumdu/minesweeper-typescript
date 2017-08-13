@@ -5,7 +5,6 @@ namespace App
 		public static OnBodyMoveEventListener(event:JQueryEventObject):void
         {
             let context = <Bootsrapper>event.data.context;
-            let skin = context.skin;
 
             if (!context.isLeftMousePressed && !context.isMiddleMousePressed)
                 return;
@@ -123,8 +122,8 @@ namespace App
 			let that = MouseEventHandlers;
 
             let context = <Bootsrapper>event.data.context;
-            let field = context.field;
             let skin = context.skin;
+            let field = context.field;
             let canvas = context.canvas;
 
             var rect = canvas.getBoundingClientRect();
@@ -211,7 +210,7 @@ namespace App
                 context.field = f;
                 context.game = new Game();
                 // same as CanvasFieldDrawer.Init method
-                context.Draw();
+                context.InitializeCanvas();
             }
             return false;
 		}

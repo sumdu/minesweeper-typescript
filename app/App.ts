@@ -2,7 +2,7 @@
 /// <reference path="FieldBuilder.ts" />
 /// <reference path="GameSettings.ts" />
 /// <reference path="Drawer/ConsoleDrawer.ts" />
-/// <reference path="Bootsrapper.ts" />
+/// <reference path="Bootstrap/Bootsrapper.ts" />
 /// <reference path="Skin.ts" />
 
 namespace App
@@ -11,7 +11,7 @@ namespace App
     {
         let field = new FieldBuilder().Build(new TestGameSettings());
 
-        SkinLoader.LoadSimpleSkin(loadingMsgId, function(skin) {
+        SkinLoader.LoadDefaultSkin(loadingMsgId, function(skin) {
             let canvas = <HTMLCanvasElement>document.getElementById(canvasId);
             let bootstrapper = new Bootsrapper(canvas, skin, field);
             bootstrapper.Bootstrap();

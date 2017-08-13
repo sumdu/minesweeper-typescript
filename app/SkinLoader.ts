@@ -2,7 +2,7 @@ namespace App
 {
     export class SkinLoader
     {
-        public static LoadSimpleSkin(loadingLogoId: string, onLoaded: ISkinLoaded)
+        public static LoadDefaultSkin(loadingLogoId: string, onLoaded: ISkinLoaded)
         {
             // remove loading element
             if (loadingLogoId)
