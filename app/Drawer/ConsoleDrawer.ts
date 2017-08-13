@@ -1,6 +1,6 @@
-namespace App.FieldDrawer
+namespace App.Drawer
 {
-    export class ConsoleFieldDrawer
+    export class ConsoleDrawer
     {
         Draw(field: Field):void
         {

@@ -1,8 +1,8 @@
-/// <reference path="../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../typings/globals/jquery/index.d.ts" />
 
-namespace App.FieldDrawer
+namespace App
 {
-    export class CanvasFieldDrawer
+    export class Bootsrapper
     {
         private previousState : CellStateEnum[][];
         private timer : number;
@@ -13,12 +13,17 @@ namespace App.FieldDrawer
         private lastPressedXCoord : number = 0;
         private lastPressedYCoord : number = 0;
 
+        public drawer : Drawer.CanvasDrawer;
+
         public constructor(public canvas: HTMLCanvasElement, public skin: Skin, public field: Field) 
         {
             this.game = new Game();
+
+            let context2d = canvas.getContext("2d");
+            this.drawer  = new Drawer.CanvasDrawer(context2d, skin, field.Width, field.Height);
         }
 
-        Init():void
+        Bootstrap():void
         {
             this.BindEventListeners();
             this.Draw();
@@ -28,24 +33,22 @@ namespace App.FieldDrawer
         {
             let that = this;
             
-            //$(this.canvas).off("click",this.OnClickEventListener);
             $(this.canvas).off("mousedown",this.OnClickEventListener);
             $(this.canvas).off("mouseup",this.OnClickEventListener);
             $(this.canvas).off("mousemove",this.OnMoveEventListener);
-            $(document).off("mousemove", this.OnBodyMoveEventListener);
             $(this.canvas).off("contextmenu", this.OnClickEventListener);
+            $(document).off("mousemove", this.OnBodyMoveEventListener);
 
-            //$(this.canvas).on("click", {context: that}, this.OnClickEventListener);
             $(this.canvas).on("mousedown", {context: that}, this.OnClickEventListener );
             $(this.canvas).on("mouseup", {context: that}, this.OnClickEventListener );
             $(this.canvas).on("mousemove", {context: that}, this.OnMoveEventListener );
-            $(document).on("mousemove", {context: that}, this.OnBodyMoveEventListener );
             $(this.canvas).on("contextmenu", {context: that}, this.OnClickEventListener);
+            $(document).on("mousemove", {context: that}, this.OnBodyMoveEventListener );
         }
 
         OnClickEventListener(event:JQueryEventObject)
         {
-            let context = <CanvasFieldDrawer>event.data.context;
+            let context = <Bootsrapper>event.data.context;
             let field = context.field;
             let skin = context.skin;
             let canvas = context.canvas;
@@ -66,7 +69,7 @@ namespace App.FieldDrawer
                     {
                         context.isMiddleMousePressed = true;
                     }
-                    context.DrawSmiley(skin.SMILE_GUESS);
+                    context.drawer.DrawSmileyGuess();
                     context.lastPressedXCoord = x;
                     context.lastPressedYCoord = y;
                 }
@@ -74,7 +77,7 @@ namespace App.FieldDrawer
                 {
                     context.isLeftMousePressed = false;
                     context.isMiddleMousePressed = false;
-                    context.DrawSmiley(skin.SMILE_OK);
+                    context.drawer.DrawSmileyOk();
                 }
             }
 
@@ -101,7 +104,7 @@ namespace App.FieldDrawer
                 else if (event.type == "mousedown" && event.which == 1) // left
                 {
                     if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
-                        context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                        context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
                 }
                 else if (event.type == "mousedown" && event.which == 2) // middle
                 {
@@ -113,7 +116,7 @@ namespace App.FieldDrawer
 
             if (event.type == "mousedown" && context.IsInsideSmiley(x, y, skin, field))
             {
-                context.DrawSmiley(skin.SMILE_PRESSED);
+                context.drawer.DrawSmileyPressed();
                 // draw pressed smiley
             }
             if (event.type == "mouseup" && context.IsInsideSmiley(x, y, skin, field))
@@ -141,7 +144,7 @@ namespace App.FieldDrawer
 
         private OnMoveEventListener(event:JQueryEventObject):void
         {
-            let context = <CanvasFieldDrawer>event.data.context;
+            let context = <Bootsrapper>event.data.context;
             if (context.isLeftMousePressed || context.isMiddleMousePressed)
             {
                 let field = context.field;
@@ -164,9 +167,9 @@ namespace App.FieldDrawer
                     let wasInsideSmiley: boolean = context.IsInsideSmiley(lx, ly, skin, field);
 
                     if (wasInsideSmiley && !isInsideSmiley)
-                        context.DrawSmiley(context.skin.SMILE_OK);
+                        context.drawer.DrawSmileyOk();
                     if (!wasInsideSmiley && isInsideSmiley)
-                        context.DrawSmiley(context.skin.SMILE_PRESSED);
+                        context.drawer.DrawSmileyPressed();
 
                     if (wasInsideField && !isInsideField)
                     {
@@ -174,7 +177,7 @@ namespace App.FieldDrawer
                         let coords = context.GetFieldCoordinates(lx, ly, skin, field);
                         if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
                         {
-                            context.ReDrawCell(context, skin.CLOSED, coords.X, coords.Y);
+                            context.drawer.ReDrawCellClosed(coords.X, coords.Y);
                         }
                     }
                     else if (!wasInsideField && isInsideField)
@@ -183,7 +186,7 @@ namespace App.FieldDrawer
                         let coords = context.GetFieldCoordinates(x, y, skin, field);
                         if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
                         {
-                            context.ReDrawCell(context, skin.CELL_PRESSED, coords.X, coords.Y);
+                            context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
                         }
                     }
                     else if  (wasInsideField && isInsideField)
@@ -195,9 +198,9 @@ namespace App.FieldDrawer
                         if (coords1.X != coords2.X || coords1.Y != coords2.X)
                         {
                             if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
-                                context.ReDrawCell(context, skin.CLOSED, coords1.X, coords1.Y);
+                                context.drawer.ReDrawCellClosed(coords1.X, coords1.Y);
                             if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
-                                context.ReDrawCell(context, skin.CELL_PRESSED, coords2.X, coords2.Y);
+                                context.drawer.ReDrawCellClosedPressed(coords2.X, coords2.Y);
                         }
                     }
                 }
@@ -231,7 +234,7 @@ namespace App.FieldDrawer
 
         private OnBodyMoveEventListener(event:JQueryEventObject):void
         {
-            let context = <CanvasFieldDrawer>event.data.context;
+            let context = <Bootsrapper>event.data.context;
             let skin = context.skin;
 
             if (!context.isLeftMousePressed && !context.isMiddleMousePressed)
@@ -249,7 +252,7 @@ namespace App.FieldDrawer
             {
                 context.isLeftMousePressed = false;
                 context.isMiddleMousePressed = false;
-                context.DrawSmiley(skin.SMILE_OK);
+                context.drawer.DrawSmileyOk();
             }
         }
 
@@ -289,7 +292,7 @@ namespace App.FieldDrawer
                 };
         }
 
-        private UpdateGameStatus(context: CanvasFieldDrawer):void
+        private GameStatusChanged(context: Bootsrapper):void
         {
             let status = context.field.GetGameStatus();
             if (status != GameStatusEnum.InProgress) {
@@ -305,16 +308,16 @@ namespace App.FieldDrawer
                 // Redraw smile
                 if (status == GameStatusEnum.Won)
                 {
-                    this.DrawSmiley(this.skin.SMILE_WON);
+                    context.drawer.DrawSmileyWon();
                 }
                 else
                 {
-                    this.DrawSmiley(this.skin.SMILE_LOST);
+                    context.drawer.DrawSmileyLost();
                 }
 		    }
         }
 
-        private ProcessLeftClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
+        private ProcessLeftClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let game = context.game;
             let skin = context.skin;
@@ -351,12 +354,12 @@ namespace App.FieldDrawer
 						context.OpenRange(x, y, context); 
 					}
                 }
-                context.UpdateGameStatus(context);
-				context.RedrawCells(context);
+                context.GameStatusChanged(context);
+				context.RedrawAllCells(context);
 			//}
         }
 
-        private ProcessMiddleClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
+        private ProcessMiddleClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let game = context.game;
             let field = context.field;
@@ -401,12 +404,12 @@ namespace App.FieldDrawer
                         field.ExplodeBombsAround(x, y);
                     }
                 //}
-                context.UpdateGameStatus(context);
-                context.RedrawCells(context);
+                context.GameStatusChanged(context);
+                context.RedrawAllCells(context);
             }
         }
 
-        private ProcessRightClick(coords: IFieldCoordinate, context: CanvasFieldDrawer):void
+        private ProcessRightClick(coords: IFieldCoordinate, context: Bootsrapper):void
         {
             let x = coords.X;
             let y = coords.Y;
@@ -418,8 +421,9 @@ namespace App.FieldDrawer
             if (cell.State == CellStateEnum.Closed) 
             {
                 cell.State = CellStateEnum.Flagged;
-                context.UpdateGameStatus(context);
-                context.RedrawBombsLeftCounter();
+                context.GameStatusChanged(context);
+                let bombsLeft = this.field.CountOfBombsNotFlagged();
+                context.drawer.DrawBombsLeftCounter(bombsLeft);
                 
             }
             else if (cell.State == CellStateEnum.Flagged) {
@@ -428,24 +432,23 @@ namespace App.FieldDrawer
                     cell.State = CellStateEnum.Questioned;
                 /*else
                     cell.State = CellStateEnum.Closed;*/
-                context.RedrawBombsLeftCounter();
+                let bombsLeft = this.field.CountOfBombsNotFlagged();
+                context.drawer.DrawBombsLeftCounter(bombsLeft);
             }
             else if (cell.State == CellStateEnum.Questioned) 
                 cell.State = CellStateEnum.Closed;
 
             if (context.game.GameOver)
             {
-                context.RedrawCells(context);
+                context.RedrawAllCells(context);
             }
             else
             {
-                context.DrawCell(cell, context2d, skin,
-                        skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
-                        skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+                context.drawer.DrawCell(cell, x, y);
             }
         }
 
-        private RecordCurrentFieldState(context: CanvasFieldDrawer):void 
+        private RecordCurrentFieldState(context: Bootsrapper):void 
         {
             let cells = context.field.Cells;
             context.previousState = [];
@@ -460,7 +463,7 @@ namespace App.FieldDrawer
             }
         }
 
-        private OpenRange(x:number, y: number, context:CanvasFieldDrawer):void
+        private OpenRange(x:number, y: number, context:Bootsrapper):void
         {
             let field = context.field;
             let cells = field.Cells;
@@ -491,7 +494,7 @@ namespace App.FieldDrawer
             }
         }
 
-        private FlagRange(x: number, y: number, processedFlags:boolean[][], context:CanvasFieldDrawer) 
+        private FlagRange(x: number, y: number, processedFlags:boolean[][], context:Bootsrapper) 
         {
             let field = context.field;
             let cells = context.field.Cells;
@@ -584,141 +587,33 @@ namespace App.FieldDrawer
         Draw():void
         {
             let field = this.field;
-            let skin = this.skin;
-            let context = this.canvas.getContext("2d");
             
+            // make sure canvas HTML has right size
             this.canvas.height = field.Height * 16 + 54 + 11;
             this.canvas.width  = field.Width * 16 + 12 + 12;
 
-            // draw border
-       		// BORDER_TOP_LEFT        11 x 12 
-            // BORDER_TOP             1  x 12
-            // BORDER_TOP_RIGHT       11 x 12
-            // BORDER_LEFT1           11 x  1 //
-            // BORDER_RIGHT1          11 x  1 //
-            // BORDER_MEDIUM_LEFT     11 x 12 
-            // BORDER_MEDIUM          1  x 12
-            // BORDER_MEDIUM_RIGHT    11 x 12 
-            // BORDER_LEFT            11 x  1 //
-            // BORDER_RIGHT           11 x  1 //
-            // BORDER_BOTTOM_LEFT     11 x 12 
-            // BORDER_BOTTOM          1  x 12
-            // BORDER_BOTTOM_RIGHT    11 x 12 
-            context.putImageData(skin.BORDER_TOP_LEFT, 0, 0);
-            for (let i = 0; i < field.Width*16; i++)
-                context.putImageData(skin.BORDER_TOP, 12 + i, 0);
-            context.putImageData(skin.BORDER_TOP_RIGHT, 12 + field.Width * 16, 0);
-
-            for (let i = 0; i < 32; i++)
-                context.putImageData(skin.BORDER_LEFT1, 0, 11+i);
-            for (let i = 0; i < 32; i++)
-                context.putImageData(skin.BORDER_RIGHT1, 12 + field.Width * 16, 11+i);
-
-            context.putImageData(skin.BORDER_MEDIUM_LEFT, 0, 43);
-            for (let i = 0; i < field.Width*16; i++)
-                context.putImageData(skin.BORDER_MEDIUM, 12 + i, 43);
-            context.putImageData(skin.BORDER_MEDIUM_RIGHT, 12 + field.Width * 16, 43);
-
-            for (let i = 0; i < field.Height*16; i++)
-                context.putImageData(skin.BORDER_LEFT, 0, 54+i);
-            for (let i = 0; i < field.Height*16; i++)
-                context.putImageData(skin.BORDER_RIGHT, 12 + field.Width * 16, 54+i);
-            
-            context.putImageData(skin.BORDER_BOTTOM_LEFT, 0, 54 + field.Height*16);
-            for (let i = 0; i < field.Width*16; i++)
-                context.putImageData(skin.BORDER_BOTTOM, 12 + i, 54 + field.Height*16);
-            context.putImageData(skin.BORDER_BOTTOM_RIGHT, 12 + field.Width*16, 54 + field.Height*16);
-        
-            // fill background behind smiley
-            for (let i=0; i<field.Width*16; i++)
-                for (let j=0; j<32; j++)
-                    context.putImageData(skin.BACKGROUND_PIXEL, 12+i, 11+j);
-
-            // draw smiley
-		    this.DrawSmiley(this.skin.SMILE_OK);
-
-            // bombs left counter
-            this.RedrawBombsLeftCounter();
-           
-            // time elapsed counter
-            this.RedrawTimeElapsed(this);
-
-            // draw cells
-            for (let x = 0; x < field.Width; x++)
-            {
-                for (let y = 0; y < field.Height; y++) 
-                {
-                    this.DrawCell(field.Cells[x][y], context, skin,
-                        skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
-                        skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
-                }
-            }
+            this.drawer.InitialDraw();  
+            this.drawer.DrawBombsLeftCounter(field.TotalCountOfBombs());
         }
 
-        DrawSmiley(img: ImageData):void
-        {
-            let context = this.canvas.getContext("2d");
-            context.putImageData(img, this.skin.SmileyXPos(this.field.Width), this.skin.SMILEY_Y_POS);
-        }
-
-        RedrawBombsLeftCounter():void
-        {
-            let field = this.field;
-            let skin = this.skin;
-            let context = this.canvas.getContext("2d");
-
-            // draw bombs left counter and timer For field with width 7 cols and more
-            if (skin.CanDrawTimers(field.Width))
-            {
-                context.putImageData(skin.BACKGROUND_TIMER, 12+5, 15)
-                let b :string;
-                let bl = field.CountOfBombsNotFlagged();
-                if (bl >= 0) {
-                    if (bl < 10) b = '00' + bl
-                    else if (bl < 100) b = '0' + bl
-                    else b = '' + bl;
-                }
-                else {
-                    if (bl > -10) b = '-0' + (bl*-1)
-                    else if (bl > -100) b = '-' + (bl*-1)
-                    else b = '---';
-                }
-                for (let i = 0; i < b.length; i++) {
-                    context.putImageData((b[i]!='-'?skin.DIGITS[+b[i]]:skin.DIGITS[10]), 12+5+2 + i * (11+2), 15+2);
-                }
-            }
-        }
-
-        RedrawTimeElapsed(context:CanvasFieldDrawer):void
+        RedrawTimeElapsed(context:Bootsrapper):void
         {
             let field = context.field;
-            let skin = context.skin;
-            let context2d = context.canvas.getContext("2d");
             let game = context.game;
 
-            // draw bombs left counter and timer For field with width 7 cols and more
-            if (skin.CanDrawTimers(field.Width)) 
+            let t :string;
+            if (!game.GameStarted)
             {
-                let t :string;
-                if (!game.GameStarted)
-                {
-                    // draw timer border
-                    context2d.putImageData(skin.BACKGROUND_TIMER, 12 + field.Width*16 - 5 - 41, 15);
-                    t = '000';
-                }
-                else
-                {
-                    t =  '' + Math.round((new Date().getTime() - game.GameStarted.getTime())/1000);
-                }
-
-                let x = skin.FieldEndPosX(field.Width) - skin.BORDER_WIDTH - 9 - t.length * (11+2) + (11+2);
-                for (let i = 0; i < t.length; i++) {
-                    context2d.putImageData(skin.DIGITS[+t[i]], x + i * (11+2), 15+2); 
-                }
+                this.drawer.DrawTimeElapsed(0);
+            }
+            else
+            {
+                let secondsElapsed = Math.round((new Date().getTime() - game.GameStarted.getTime())/1000);
+                this.drawer.DrawTimeElapsed(secondsElapsed);
             }
         }
 
-        RedrawCells(context: CanvasFieldDrawer):void
+        RedrawAllCells(context: Bootsrapper):void
         {
             let field = context.field;
             let skin = context.skin;
@@ -733,9 +628,7 @@ namespace App.FieldDrawer
                 {
                     for (let y = 0; y < field.Height; y++) 
                     {
-                        context.DrawOpenCell(field.Cells[x][y], context2d, skin,
-                            skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
-                            skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+                        context.drawer.DrawOpenCell(field.Cells[x][y], x, y);
                     }
                 }
             }
@@ -747,95 +640,39 @@ namespace App.FieldDrawer
                     {
                         if (field.Cells[x][y].State != prevState[x][y])
                         {
-                            context.DrawCell(field.Cells[x][y],context2d, skin,
-                                skin.FIELD_START_POS_X + x * skin.CELL_WIDTH, 
-                                skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT);
+                            context.drawer.DrawCell(field.Cells[x][y], x, y);
                         }
                     }
                 }
             }
         }
-
-        // draw cell while game is in progress
-        DrawCell(cell: Cell, context: CanvasRenderingContext2D, skin: Skin, xPos: number, yPos: number):void
+        
+        // when middle mouse down on cell (x,y)
+        DrawPressedCells(context: Bootsrapper, x:  number, y: number)
         {
-            let img: ImageData = this.skin.CLOSED;
-            switch (cell.State)
-            {
-                case CellStateEnum.Closed:
-                    img = skin.CLOSED;
-                    break;
-                case CellStateEnum.Exploded:
-                    img = skin.EXPLODED;
-                    break;
-                case CellStateEnum.Flagged:
-                    img = skin.FLAG;
-                    break;
-                case CellStateEnum.Open:
-                    img = skin.OPENED_CELLS[cell.CountBombsAround]
-                    break;
-                case CellStateEnum.Questioned:
-                    img = skin.QUESTION;
-                    break;
-            }
-            context.putImageData(img, xPos, yPos);
-        }
-
-        // draw cell when game is over
-        DrawOpenCell(cell: Cell, context: CanvasRenderingContext2D, skin: Skin, xPos: number, yPos: number):void
-        {
-            let img: ImageData = skin.CLOSED;
-            if (cell.State == CellStateEnum.Open)
-            {
-                img = skin.OPENED_CELLS[cell.CountBombsAround];
-            }
-            else if (cell.State == CellStateEnum.Closed)
-            {
-                if (cell.HasBomb)
-                {
-                    img = skin.MINE;
-                }
-            }
-            else if (cell.State == CellStateEnum.Exploded)
-            {
-                img = skin.EXPLODED;
-            }
-            else if (cell.State == CellStateEnum.Flagged)
-            {
-                if (cell.HasBomb)
-                {
-                    img = skin.FLAG;
-                }
-                else
-                {
-                    img = skin.WRONG_FLAG;
-                }
-            }
-            else if (cell.State == CellStateEnum.Questioned)
-            {
-                if (cell.HasBomb)
-                {
-                    img = skin.MINE;
-                }
-                else
-                {
-                    img = skin.QUESTION;
-                }
-            }
-            context.putImageData(img, xPos, yPos);
-        }
-
-        ReDrawCell(context: CanvasFieldDrawer, img: ImageData, x: number, y: number)
-        {
-            let context2d = context.canvas.getContext("2d");
+            let field = context.field;
             let skin = context.skin;
 
-            let xPos = skin.FIELD_START_POS_X + x * skin.CELL_WIDTH;
-            let yPos = skin.FIELD_START_POS_Y + y * skin.CELL_HEIGHT;
-            context2d.putImageData(img, xPos, yPos);
+            let neighbours = field.GetCellWithNeighbours(x, y);
+
+            for (let i=0; i<3; i++)
+            {
+                for (let j=0; j<3; j++)
+                {
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed)
+                    {
+                        context.drawer.ReDrawCellClosedPressed(x+i-1, y+j-1);
+                    }
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned)
+                    {
+                        context.drawer.ReDrawCellQuestionPressed(x+i-1, y+j-1);
+                    }
+                }
+            }
         }
 
-        DrawPressedCells(context: CanvasFieldDrawer, x:  number, y: number)
+        // when middle mouse up on cell (x,y)
+        DrawDepressedCells(context: Bootsrapper, x:  number, y: number)
         {
             let field = context.field;
             let skin = context.skin;
@@ -846,36 +683,13 @@ namespace App.FieldDrawer
             {
                 for (let j=0; j<3; j++)
                 {
-                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) // TODO: it should also work for Questioned
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) 
                     {
-                        context.ReDrawCell(context, skin.CELL_PRESSED, x+i-1, y+j-1);
+                        context.drawer.ReDrawCellClosed(x+i-1, y+j-1);
                     }
-                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) // TODO: it should also work for Questioned
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) 
                     {
-                        context.ReDrawCell(context, skin.QUESTION_PRESSED, x+i-1, y+j-1);
-                    }
-                }
-            }
-        }
-
-        DrawDepressedCells(context: CanvasFieldDrawer, x:  number, y: number)
-        {
-            let field = context.field;
-            let skin = context.skin;
-
-            let neighbours = field.GetCellWithNeighbours(x, y);
-                    
-            for (let i=0; i<3; i++)
-            {
-                for (let j=0; j<3; j++)
-                {
-                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) // TODO: it should also work for Questioned
-                    {
-                        context.ReDrawCell(context, skin.CLOSED, x+i-1, y+j-1);
-                    }
-                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) // TODO: it should also work for Questioned
-                    {
-                        context.ReDrawCell(context, skin.QUESTION, x+i-1, y+j-1);
+                        context.drawer.ReDrawCellQuestion(x+i-1, y+j-1);
                     }
                 }
             }

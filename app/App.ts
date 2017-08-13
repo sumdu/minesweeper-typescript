@@ -1,8 +1,8 @@
 /// <reference path="Game.ts" />
 /// <reference path="FieldBuilder.ts" />
 /// <reference path="GameSettings.ts" />
-/// <reference path="FieldDrawer/ConsoleFieldDrawer.ts" />
-/// <reference path="FieldDrawer/CanvasFieldDrawer.ts" />
+/// <reference path="Drawer/ConsoleDrawer.ts" />
+/// <reference path="Bootsrapper.ts" />
 /// <reference path="Skin.ts" />
 
 namespace App
@@ -19,8 +19,8 @@ namespace App
             // initialize field drawer
             let canvas = <HTMLCanvasElement>document.getElementById(canvasId);
             let g = new Game();
-            let cd = new FieldDrawer.CanvasFieldDrawer(canvas, skin, f);
-            cd.Init();
+            let cd = new Bootsrapper(canvas, skin, f);
+            cd.Bootstrap();
         });
     }
 }
