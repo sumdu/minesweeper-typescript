@@ -20,7 +20,7 @@ namespace App
 			return this.GetCellNeighbours(x, y, false);
 		}
 
-		public GetCellNeighbours(x: number, y: number, includeCenter: boolean):Cell[][] 
+		private GetCellNeighbours(x: number, y: number, includeCenter: boolean):Cell[][] 
 		{
 			let w = this.Width;
 			let h = this.Height;
@@ -111,7 +111,7 @@ namespace App
 			}
 		}
 
-		public CountBombsNotMarked():number
+		public CountOfBombsNotFlagged():number
 		{
 			let flags = 0;
 			let bombs = 0;
@@ -124,7 +124,7 @@ namespace App
 			return bombs-flags;
 		}
 		
-		public CountBombs():number
+		public TotalCountOfBombs():number
 		{
 			let bombs = 0;
 			this.Cells.forEach(col => {
@@ -135,7 +135,7 @@ namespace App
 			return bombs;
 		}
 
-		private AllOpenedOrFlagged():boolean
+		private AllCellsAreOpenedOrFlagged():boolean
 		{
 			let res: boolean = true;
 			for (let x = 0; x < this.Width; x++)
@@ -144,7 +144,7 @@ namespace App
 			return res;
 		}
 
-		private BombExploded():boolean {
+		private HasExplodedBomb():boolean {
 			let res: boolean = false;
 			for (let x = 0; x < this.Width; x++)
 				for (let y = 0; y < this.Height; y++) 
@@ -154,14 +154,14 @@ namespace App
 
 		public GetGameStatus():GameStatusEnum {
 			let res: GameStatusEnum;
-			if (this.AllOpenedOrFlagged()) {
+			if (this.AllCellsAreOpenedOrFlagged()) {
 				// number of bombs == number of flags
-				if (this.CountBombsNotMarked() == 0)
+				if (this.CountOfBombsNotFlagged() == 0)
 					res = GameStatusEnum.Won
 				else
 					res = GameStatusEnum.Lost
 			}
-			else if (this.BombExploded())
+			else if (this.HasExplodedBomb())
 				res = GameStatusEnum.Lost
 			else 
 				res = GameStatusEnum.InProgress;

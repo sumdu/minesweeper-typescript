@@ -6,13 +6,17 @@ namespace App.FieldDrawer
     {
         private previousState : CellStateEnum[][];
         private timer : number;
+        private game: Game;
 
         private isLeftMousePressed : boolean;
         private isMiddleMousePressed : boolean;
         private lastPressedXCoord : number = 0;
         private lastPressedYCoord : number = 0;
 
-        public constructor(public canvas: HTMLCanvasElement, public skin: Skin, public field: Field, public game: Game) {}
+        public constructor(public canvas: HTMLCanvasElement, public skin: Skin, public field: Field) 
+        {
+            this.game = new Game();
+        }
 
         Init():void
         {
@@ -124,7 +128,7 @@ namespace App.FieldDrawer
                 let gameSettings :IGameSettings = {
                     Width: context.field.Width,
                     Height: context.field.Height,
-                    BombCount: context.field.CountBombs()
+                    BombCount: context.field.TotalCountOfBombs()
                 };
                 let f = new FieldBuilder().Build(gameSettings);
                 context.field = f;
@@ -372,91 +376,28 @@ namespace App.FieldDrawer
                 var cel;
                 // Allow middle click only on open cells, which has a number 1..8
                 if (cells[x][y].State == CellStateEnum.Open && cells[x][y].CountBombsAround > 0 && cells[x][y].CountBombsAround == field.CountFlaggedNeighbours(x, y)) {
-                    if (field.NeighboursAreCorrectlyMarked(x,y)) {
-                        // -------------------------
-                        if (x > 0 && y > 0 && cells[x-1][y-1].State == CellStateEnum.Closed) {
-                            cel = cells[x-1][y-1]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x-1, y-1, context); 
-                            }
-                        }
-                        // -------------------------
-                        if (x > 0 && cells[x-1][y].State == CellStateEnum.Closed) {
-                            cel = cells[x-1][y]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x-1, y, context); 
-                            }
-                        }
-                        // -------------------------
-                        if (x > 0 && y != h - 1 && cells[x-1][y+1].State == CellStateEnum.Closed) {
-                            cel = cells[x-1][y+1]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x-1, y+1, context); 
-                            }
-                        }
-                        // ---------------------------------------------------------------------
-                        cel = cells[x][y-1];
-                        if (y > 0 && cel.State == CellStateEnum.Closed) {
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x, y-1, context); 
-                            }
-                        }
-                        // -------------------------
-                        cel = cells[x][y+1];
-                        if (y != h - 1 && cel.State == CellStateEnum.Closed) {
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x, y+1, context); 
-                            }
-                        }
-                        // -----------------------------------------------------------------------
-                        if (x < w - 1 && y > 0 && cells[x+1][y-1].State == CellStateEnum.Closed) {
-                            cel = cells[x+1][y-1]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x+1, y-1, context); 
-                            }
-                        }
-                        // -------------------------
-                        if (x < w - 1 && cells[x+1][y].State == CellStateEnum.Closed) {
-                            cel = cells[x+1][y]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x+1, y, context); 
-                            }
-                        }
-                        // -------------------------
-                        if (x < w - 1 && y < h - 1 && cells[x+1][y+1].State == CellStateEnum.Closed) {
-                            cel = cells[x+1][y+1]; // it will cause exception "Index out of range" if declared above
-                            if (cel.CountBombsAround > 0) {
-                                cel.State = CellStateEnum.Open;
-                            }
-                            else if (cel.CountBombsAround == 0) {
-                                context.OpenRange(x+1, y+1, context); 
+                    if (field.NeighboursAreCorrectlyMarked(x,y)) 
+                    {
+                        let neighbours = field.GetNeighbours(x,y);
+                        for (let i=-1; i<2; i++)
+                        {
+                            for (let j=-1; j<2; j++)
+                            {
+                                let cell = neighbours[i+1][j+1];
+                                if (cell != null && cell.State == CellStateEnum.Closed)
+                                    if (cell.CountBombsAround > 0) {
+                                        cell.State = CellStateEnum.Open;
+                                    }
+                                    else if (cell.CountBombsAround == 0) {
+                                        context.OpenRange(x+i, y+i, context); 
+                                    }
                             }
                         }
                     }
                     // Not all bombs around are marked correctly
                     // game overs and wrongly marked bombs explode.
-                    else {
+                    else 
+                    {
                         field.ExplodeBombsAround(x, y);
                     }
                 //}
@@ -552,11 +493,28 @@ namespace App.FieldDrawer
 
         private FlagRange(x: number, y: number, processedFlags:boolean[][], context:CanvasFieldDrawer) 
         {
+            let field = context.field;
             let cells = context.field.Cells;
             let h: number = context.field.Height;
             let w: number = context.field.Width;
 
             processedFlags[x][y] = true;
+
+            // let neighbours = field.GetNeighbours(x,y);
+            // for (let i=-1; i<2; i++)
+            // {
+            //     for (let j=-1; j<2; j++)
+            //     {
+            //         let cell = neighbours[i+1][j+1];
+            //         processedFlags[x+i][y+j] = true;
+            //         if (cell != null && !cell.IsEmpty && !processedFlags[x+i][y+j] && cell.State == CellStateEnum.Closed)
+            //         {
+            //             context.FlagRange(x+i, y+j, processedFlags, context);
+            //         }
+            //     }
+            // }
+
+
             if (x > 0 && y > 0) 
                 if (cells[x-1][y-1].IsEmpty && !processedFlags[x-1][y-1] && cells[x-1][y-1].State == CellStateEnum.Closed) {
                     processedFlags[x-1][y-1] = true;
@@ -714,7 +672,7 @@ namespace App.FieldDrawer
             {
                 context.putImageData(skin.BACKGROUND_TIMER, 12+5, 15)
                 let b :string;
-                let bl = field.CountBombsNotMarked();
+                let bl = field.CountOfBombsNotFlagged();
                 if (bl >= 0) {
                     if (bl < 10) b = '00' + bl
                     else if (bl < 100) b = '0' + bl

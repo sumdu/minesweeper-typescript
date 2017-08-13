@@ -12,20 +12,14 @@ namespace App
         let f = new FieldBuilder().Build(new TestGameSettings());
         
         // draw field to console
-        let d = new FieldDrawer.ConsoleFieldDrawer();
-        d.Draw(f); 
+        //let d = new FieldDrawer.ConsoleFieldDrawer();
+        //d.Draw(f); 
 
-        new Skin().LoadSkin('img/default.png', function(skin) {
-            // remove loading element
-            if (loadingMsgId)
-            {
-                let msgElement = <HTMLElement>document.getElementById(loadingMsgId);
-                msgElement.parentNode.removeChild(msgElement);
-            }
+        SkinLoader.LoadSimpleSkin(loadingMsgId, function(skin) {
             // initialize field drawer
             let canvas = <HTMLCanvasElement>document.getElementById(canvasId);
             let g = new Game();
-            let cd = new FieldDrawer.CanvasFieldDrawer(canvas, skin, f, g);
+            let cd = new FieldDrawer.CanvasFieldDrawer(canvas, skin, f);
             cd.Init();
         });
     }
