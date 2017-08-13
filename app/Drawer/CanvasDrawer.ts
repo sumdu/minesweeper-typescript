@@ -2,7 +2,7 @@ namespace App.Drawer
 {
     export class CanvasDrawer
     {
-        constructor(public context2d: CanvasRenderingContext2D, public skin: Skin, public fieldWidth: number, public fieldHeight: number) { }
+        constructor(public context2d: CanvasRenderingContext2D, public skin: Skin, public fieldWidth: number, public fieldHeight: number, public bombCount: number) { }
 
         // draws borders and static elements
         public InitialDraw()
@@ -48,6 +48,7 @@ namespace App.Drawer
 
             // bombs left counter
             this.DrawBombsLeftCounterBackground();
+            this.DrawBombsLeftCounter(this.bombCount);
            
             // time elapsed counter
             this.DrawTimerBackground();
@@ -193,6 +194,8 @@ namespace App.Drawer
             let t: string;
             if (seconds == 0)
                 t = '000';
+            else if (seconds > 999)
+                t = '999'
             else
                 t = '' + seconds;
             let x = skin.FieldEndPosX(this.fieldWidth) - skin.BORDER_WIDTH - 9 - t.length * (11+2) + (11+2);

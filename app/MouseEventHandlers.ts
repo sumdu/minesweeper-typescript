@@ -235,23 +235,6 @@ namespace App
             }
             if (event.type == "mouseup" && that.IsInsideSmiley(x, y, skin, field))
             {
-                let timer = context.GameContext.timer;
-                // start new game
-                // clear timer interval
-                if (timer) {
-                    clearInterval(timer);
-                    timer = undefined;
-                }
-                // same as initialized by CanvasFieldDrawer constructor
-                let gameSettings :IGameSettings = {
-                    Width: field.Width,
-                    Height: field.Height,
-                    BombCount: field.TotalCountOfBombs()
-                };
-                let f = new FieldBuilder().Build(gameSettings);
-                field = f;
-                game = new Game();
-                // same as CanvasFieldDrawer.Init method
                 Bootsrapper.ResetAndStartNewGame(bootstrapper, context);
             }
             return false;
@@ -288,8 +271,8 @@ namespace App
             let x_field = x - skin.FIELD_START_POS_X;
             let y_field = y - skin.FIELD_START_POS_Y;
             return {
-                    X: Math.floor(x_field/16),
-                    Y: Math.floor(y_field/16)
+                    X: Math.floor(x_field/skin.CELL_WIDTH),
+                    Y: Math.floor(y_field/skin.CELL_HEIGHT)
                 };
         }
 
@@ -300,15 +283,18 @@ namespace App
             
             if (status != GameStatusEnum.InProgress) 
             {
-                gameContext.game.GameOver = true; 
-                // Stop drawing time game played
+                // Stop timer
                 if (gameContext.timer) {
                     clearInterval(gameContext.timer);
                     gameContext.timer = undefined;
                 }
+                // To stop processing click events
+                gameContext.game.GameOver = true; 
                 // Record time game played.
                 if (gameContext.game.GameStarted)
+                {
                     gameContext.game.GameEnded = new Date();
+                }
                 // Redraw smile
                 if (status == GameStatusEnum.Won)
                 {

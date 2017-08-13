@@ -24,7 +24,7 @@ namespace App
             if (!this._drawer)
             {
                 let context2d = this.canvas.getContext("2d");
-                this._drawer  = new Drawer.CanvasDrawer(context2d, this.skin, this.field.Width, this.field.Height);
+                this._drawer  = new Drawer.CanvasDrawer(context2d, this.skin, this.field.Width, this.field.Height, this.field.TotalCountOfBombs());
             }
             return this._drawer;
         };

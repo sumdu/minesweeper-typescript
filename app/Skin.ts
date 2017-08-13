@@ -37,10 +37,10 @@ namespace App
         BACKGROUND_PIXEL: ImageData;
         BACKGROUND_TIMER: ImageData;
         
-        FIELD_START_POS_X :number;          //  x: left top corner of field
-        FIELD_START_POS_Y :number;          //  y: left top corner of field
-        FieldEndPosX(width: number) :number;         //  x2: botoom right corner of field
-        FieldEndPosY(height: number) :number;        //  y2: botoom right corner of field
+        FIELD_START_POS_X :number;                  //  x: left top corner of field
+        FIELD_START_POS_Y :number;                  //  y: left top corner of field
+        FieldEndPosX(width: number) :number;        //  x2: botoom right corner of field
+        FieldEndPosY(height: number) :number;       //  y2: botoom right corner of field
 
         SmileyXPos(width: number):number;
         SMILEY_Y_POS : number; 

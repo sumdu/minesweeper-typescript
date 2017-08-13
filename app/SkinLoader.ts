@@ -2,12 +2,12 @@ namespace App
 {
     export class SkinLoader
     {
-        public static LoadDefaultSkin(loadingLogoId: string, onLoaded: ISkinLoaded)
+        public static LoadDefaultSkin(loaderElementId: string, onLoadedDelegate: ISkinLoadedDelegate)
         {
             // remove loading element
-            if (loadingLogoId)
+            if (loaderElementId)
             {
-                let msgElement = <HTMLElement>document.getElementById(loadingLogoId);
+                let msgElement = <HTMLElement>document.getElementById(loaderElementId);
                 msgElement.parentNode.removeChild(msgElement);
             }
 
@@ -164,7 +164,7 @@ namespace App
 
                 skin.BACKGROUND_TIMER       = context.getImageData(28, 82, 41, 25);
                 
-                onLoaded(skin);
+                onLoadedDelegate(skin);
             }); //.bind(this);
             img.src = fileName;
         }

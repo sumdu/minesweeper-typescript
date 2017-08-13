@@ -2,7 +2,7 @@ namespace App
 {
 	export class FieldClickProcessor
 	{
-        public static ProcessLeftClick(coords: IFieldCoordinate, field: Field):FieldClickResult
+        public static ProcessLeftClick(coords: IFieldCoordinate, field: Field): FieldClickResult
         {
             let cells = field.Cells;
            
@@ -77,16 +77,19 @@ namespace App
                         {
                             let cell = neighbours[i+1][j+1];
                             if (cell != null && cell.State == CellStateEnum.Closed)
+                            {
                                 if (cell.CountBombsAround > 0) {
                                     cell.State = CellStateEnum.Open;
                                 }
                                 else if (cell.CountBombsAround == 0) {
                                     this.OpenRange(x+i, y+i, field); 
                                 }
+                            }
                         }
                     }
                     let stateAfterClick = this.RecordCurrentFieldState(field.Cells);
                     
+                    res.GameStatus = field.GetGameStatus(); // if middle click opens last cell game ends
                     res.HasChangedCells = true;
                     res.ChangedCellsFlags = this.GetDifferenceBetweenCellStates(stateBeforeClick, stateAfterClick);
                 }
@@ -120,19 +123,15 @@ namespace App
             {
                 cell.State = CellStateEnum.Flagged;
                 
-                //context.GameStatusChanged(context);
                 res.GameStatus = field.GetGameStatus(); // game can be won or lost at this point;
                 res.IsBombCounterChanged = true; // this indicated to redraw bomb counter
 
                 res.HasChangedCells = true;
                 res.ChangedCellsFlags[x][y] = true;
             }
-            else if (cell.State == CellStateEnum.Flagged) {
-                
-                /*if (this.useQuestion)*/
-                    cell.State = CellStateEnum.Questioned;
-                /*else
-                    cell.State = CellStateEnum.Closed;*/
+            else if (cell.State == CellStateEnum.Flagged) 
+            {
+                cell.State = CellStateEnum.Questioned;
                 
                 res.IsBombCounterChanged = true; // this indicated to redraw bomb counter
                 res.HasChangedCells = true;
@@ -145,7 +144,6 @@ namespace App
                 res.HasChangedCells = true;
                 res.ChangedCellsFlags[x][y] = true;
             }
-
             return res;
         }
 
@@ -163,17 +161,9 @@ namespace App
             return res;
         }
 
-        private static GameStatusChanged(field: Field):GameStatusEnum
-        {
-            return field.GetGameStatus();
-            
-
-        }
-
         private static RecordCurrentFieldState(cells: Cell[][]):CellStateEnum[][] 
         {
             let cellsState: CellStateEnum[][] = [];
-
             for (let i = 0; i < cells.length; i++)
             {
                 cellsState[i] = [];
@@ -182,7 +172,6 @@ namespace App
                     cellsState[i][j] = cells[i][j].State;
                 }
             }
-
             return cellsState;
         }
 
@@ -238,6 +227,7 @@ namespace App
 
             processedFlags[x][y] = true;
 
+            // TODO: IMPROVE THIS PART
             // let neighbours = field.GetNeighbours(x,y);
             // for (let i=-1; i<2; i++)
             // {
@@ -252,69 +242,84 @@ namespace App
             //     }
             // }
 
-
             if (x > 0 && y > 0) 
-                if (cells[x-1][y-1].IsEmpty && !processedFlags[x-1][y-1] && cells[x-1][y-1].State == CellStateEnum.Closed) {
+                if (cells[x-1][y-1].IsEmpty && !processedFlags[x-1][y-1] && cells[x-1][y-1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x-1][y-1] = true;
                     this.FlagRange(x - 1, y - 1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x-1][y-1] = true;
                 }
             if (x > 0)
-                if (cells[x-1][y].IsEmpty && !processedFlags[x-1][y] && cells[x-1][y].State == CellStateEnum.Closed) {
+                if (cells[x-1][y].IsEmpty && !processedFlags[x-1][y] && cells[x-1][y].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x-1][y] = true;
                     this.FlagRange(x - 1, y, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x-1][y] = true;
                 }
             if (x > 0 && y != h - 1)
-                if (cells[x-1][y+1].IsEmpty && !processedFlags[x-1][y+1] && cells[x-1][y+1].State == CellStateEnum.Closed) {
+                if (cells[x-1][y+1].IsEmpty && !processedFlags[x-1][y+1] && cells[x-1][y+1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x-1][y+1] = true;
                     this.FlagRange(x-1, y+1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x-1][y+1] = true;
                 }
             if (y > 0)
-                if (cells[x]  [y-1].IsEmpty && !processedFlags[x][y-1] && cells[x][y-1].State == CellStateEnum.Closed) {
+                if (cells[x]  [y-1].IsEmpty && !processedFlags[x][y-1] && cells[x][y-1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x][y-1] = true;
                     this.FlagRange(x, y-1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x][y-1] = true;
                 }
             if (y != h - 1) 
-                if (cells[x]  [y+1].IsEmpty && !processedFlags[x][y+1]  && cells[x][y+1].State == CellStateEnum.Closed) {
+                if (cells[x]  [y+1].IsEmpty && !processedFlags[x][y+1]  && cells[x][y+1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x][y+1] = true;
                     this.FlagRange(x, y+1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x][y+1] = true;
                 }
             if (x < w - 1 && y > 0)
-                if (cells[x+1][y-1].IsEmpty && !processedFlags[x+1][y-1]  && cells[x+1][y-1].State == CellStateEnum.Closed) {
+                if (cells[x+1][y-1].IsEmpty && !processedFlags[x+1][y-1]  && cells[x+1][y-1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x+1][y-1] = true;
                     this.FlagRange(x+1, y-1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x+1][y-1] = true;
                 }
             if (x < w - 1) 
-                if (cells[x+1][y].IsEmpty && !processedFlags[x+1][y]  && cells[x+1][y].State == CellStateEnum.Closed) {
+                if (cells[x+1][y].IsEmpty && !processedFlags[x+1][y]  && cells[x+1][y].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x+1][y] = true;
                     this.FlagRange(x+1, y, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x+1][y] = true;
                 }
             if (x < w - 1 && y < h - 1) 
-                if (cells[x+1][y+1].IsEmpty && !processedFlags[x+1][y+1]  && cells[x+1][y+1].State == CellStateEnum.Closed) {
+                if (cells[x+1][y+1].IsEmpty && !processedFlags[x+1][y+1]  && cells[x+1][y+1].State == CellStateEnum.Closed) 
+                {
                     processedFlags[x+1][y+1] = true;
                     this.FlagRange(x+1, y+1, processedFlags, field);
                 }
-                else {
+                else 
+                {
                     processedFlags[x+1][y+1] = true;
                 }
 	    }

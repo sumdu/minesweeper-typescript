@@ -49,8 +49,7 @@ namespace App
             canvas.height = (field.Height * skin.CELL_WIDTH) + 54 + 11;
             canvas.width  = (field.Width * skin.CELL_HEIGHT) + 12 + 12;
 
-            drawer.InitialDraw();  
-            drawer.DrawBombsLeftCounter(field.TotalCountOfBombs());
+            drawer.InitialDraw();
         }
 
         public static ResetAndStartNewGame(bootstrapper: Bootsrapper, context: IContext):void

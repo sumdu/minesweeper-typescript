@@ -17,20 +17,21 @@ Known issues:
 Todo:
 - remember best scores
 
-(done) - draw pressed cells for middle button
-(done) - bind handler for middle click
-(done)    > verify logic: must be if number inside the cell = number of flags =>
-(done)        > flags correct - open
-(done)        > not correct - blow up
-(done) - redraw smile and pressed cells when dragging mouse
-(done) - add mouse up and down effect on cells
-(done)    > mouse down - pressed effect for cell under cursor
-(done)    > mouse up - click performed for cell under cursor
-(done) - add mouse up and down effect on smile
-(done) - add timer counter
-(done) - add bombs left counter
-(done) - get rid of temporary canvas
-(done) - add game won message or change smile
+Implemented:
+- (done) - draw pressed cells for middle button
+- (done) - bind handler for middle click
+- (done)    > verify logic: must be if number inside the cell = number of flags =>
+- (done)        > flags correct - open
+- (done)        > not correct - blow up
+- (done) - redraw smile and pressed cells when dragging mouse
+- (done) - add mouse up and down effect on cells
+- (done)    > mouse down - pressed effect for cell under cursor
+- (done)    > mouse up - click performed for cell under cursor
+- (done) - add mouse up and down effect on smile
+- (done) - add timer counter
+- (done) - add bombs left counter
+- (done) - get rid of temporary canvas
+- (done) - add game won message or change smile
 
 Found competitor :)
 http://www.freeminesweeper.org/minecore.html

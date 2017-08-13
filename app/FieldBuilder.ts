@@ -5,7 +5,7 @@ namespace App
 {
     export class FieldBuilder
 	{
-		public Build(settings:IGameSettings):Field
+		public Build(settings:IGameSettings): Field
 		{
 			let w = settings.Width;
 			let h = settings.Height;
@@ -36,8 +36,10 @@ namespace App
 			}
 			else {
 				// Alerts and exits, so that paint method is never called.
-				alert('Wrong minesweeper init parameters.\nNumber of bombs must be less than size of field.');
-				return;
+				let msg = 'Wrong minesweeper init parameters.\nNumber of bombs must be less than size of field.';
+				//alert(msg);
+				//return;
+				throw new MinesweeperException(msg);
 			}
 			// calculate bombs around
 			for (let i=0; i<w; i++)

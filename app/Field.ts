@@ -144,7 +144,8 @@ namespace App
 			return res;
 		}
 
-		private HasExplodedBomb():boolean {
+		private HasExplodedBomb():boolean 
+		{
 			let res: boolean = false;
 			for (let x = 0; x < this.Width; x++)
 				for (let y = 0; y < this.Height; y++) 
@@ -152,7 +153,8 @@ namespace App
 			return res;
 		}
 
-		public GetGameStatus():GameStatusEnum {
+		public GetGameStatus():GameStatusEnum 
+		{
 			let res: GameStatusEnum;
 			if (this.AllCellsAreOpenedOrFlagged()) {
 				// number of bombs == number of flags

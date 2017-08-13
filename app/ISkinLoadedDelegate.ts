@@ -1,6 +1,6 @@
 namespace App
 {
-    export interface ISkinLoaded 
+    export interface ISkinLoadedDelegate 
     {
         (skin: Skin): void;
     }
