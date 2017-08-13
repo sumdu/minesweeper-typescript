@@ -1,23 +1,32 @@
 Classic Minesweeper Game written in TypeScript
 
-# Confirm that your typescript version is 2.4.1 or greater
+HOW TO BUILD
+
+# 1. Confirm that your typescript version is 2.4.1 or greater
 tsc -v
 
-# Install Typings CLI utility globally
+# 2. Install Typings CLI utility globally
 npm install typings --global
-# And restore typings as per typings.json configuration file
+
+# 3. And restore typings as per typings.json configuration file
 typings install
 
-# Use following options (only for adding a new typing)
-typings install dt~jquery --global --save
+# 4. Now you can compile the project
+tsc
 
-Known issues:
+# To add a new ts definition file, use command as
+# typings install dt~jquery --global --save
+
+KNOWN ISSUES
+
 - when dragging pressed mouse over cells, sometime pressed cell stays pressed after cursor leaves that cell (maybe, related to how onmove event is fired, newer coords fired, then older)
 
-Todo:
+TODO
+
 - remember best scores
 
-Implemented:
+ALREADY DONE
+
 - (done) - draw pressed cells for middle button
 - (done) - bind handler for middle click
 - (done)    > verify logic: must be if number inside the cell = number of flags =>
@@ -33,6 +42,7 @@ Implemented:
 - (done) - get rid of temporary canvas
 - (done) - add game won message or change smile
 
-Found competitor :)
+SIMILAR SITES
+
 http://www.freeminesweeper.org/minecore.html
 
