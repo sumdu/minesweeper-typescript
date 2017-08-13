@@ -231,6 +231,102 @@ namespace App.Drawer
             }        
         }
 
+        public RedrawTime(context:IContext):void
+        {
+            let game = context.GameContext.game;
+            let drawer = context.GameContext.drawer;
+
+            let t :string;
+            if (!game.GameStarted)
+            {
+                drawer.DrawTimeElapsed(0);
+            }
+            else
+            {
+                let secondsElapsed = Math.round((new Date().getTime() - game.GameStarted.getTime())/1000);
+                drawer.DrawTimeElapsed(secondsElapsed);
+            }
+        }
+
+        public RedrawAllCells(context: IContext, changedFlags: boolean[][]):void
+        {
+            let game = context.GameContext.game;
+            let drawer = context.GameContext.drawer;
+            let field = context.GameContext.field;
+
+            // Check condition end of game, becuase it results
+            // in a different drawing algorythm. E.g., if game is over then all bombs
+            // are shown.
+            if (game.GameOver) {
+                for (let x = 0; x < field.Width; x++)
+                {
+                    for (let y = 0; y < field.Height; y++) 
+                    {
+                        drawer.DrawOpenCell(field.Cells[x][y], x, y);
+                    }
+                }
+            }
+            else
+            {
+                for (let x = 0; x < field.Width; x++)
+                {
+                    for (let y = 0; y < field.Height; y++) 
+                    {
+                        if (changedFlags[x][y])
+                        {
+                            drawer.DrawCell(field.Cells[x][y], x, y);
+                        }
+                    }
+                }
+            }
+        }
+
+        // when middle mouse down on cell (x,y)
+        public DrawPressedCells(context: IContext, x:  number, y: number)
+        {
+            let drawer = context.GameContext.drawer;
+            let field = context.GameContext.field;
+            let neighbours = field.GetCellWithNeighbours(x, y);
+
+            for (let i=0; i<3; i++)
+            {
+                for (let j=0; j<3; j++)
+                {
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed)
+                    {
+                        drawer.ReDrawCellClosedPressed(x+i-1, y+j-1);
+                    }
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned)
+                    {
+                        drawer.ReDrawCellQuestionPressed(x+i-1, y+j-1);
+                    }
+                }
+            }
+        }
+
+        // when middle mouse up on cell (x,y)
+        public DrawDepressedCells(context: IContext, x:  number, y: number)
+        {
+            let drawer = context.GameContext.drawer;
+            let field = context.GameContext.field;
+            let neighbours = field.GetCellWithNeighbours(x, y);
+                    
+            for (let i=0; i<3; i++)
+            {
+                for (let j=0; j<3; j++)
+                {
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) 
+                    {
+                        drawer.ReDrawCellClosed(x+i-1, y+j-1);
+                    }
+                    if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) 
+                    {
+                        drawer.ReDrawCellQuestion(x+i-1, y+j-1);
+                    }
+                }
+            }
+        }
+
         private ReDrawCell(x: number, y: number, img: ImageData)
         {
             let skin = this.skin;

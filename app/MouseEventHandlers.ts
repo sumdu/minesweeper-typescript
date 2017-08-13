@@ -4,12 +4,15 @@ namespace App
 	{
 		public static OnBodyMoveEventListener(event:JQueryEventObject):void
         {
-            let context = <Bootsrapper>event.data.context;
+            let context = <IContext>event.data.context;
+            let canvas = context.GameContext.canvas;
+            let drawer = context.GameContext.drawer;
+            let mouseContext = context.MouseContext;
 
-            if (!context.isLeftMousePressed && !context.isMiddleMousePressed)
+            if (!mouseContext.isLeftMousePressed && !mouseContext.isMiddleMousePressed)
                 return;
 
-            var rect = context.canvas.getBoundingClientRect();
+            var rect = canvas.getBoundingClientRect();
             var x = Math.floor(event.clientX - rect.left);
             var y = Math.floor(event.clientY - rect.top);
 
@@ -19,9 +22,9 @@ namespace App
 
             if (!isInsideCanvas)
             {
-                context.isLeftMousePressed = false;
-                context.isMiddleMousePressed = false;
-                context.drawer.DrawSmileyOk();
+                mouseContext.isLeftMousePressed = false;
+                mouseContext.isMiddleMousePressed = false;
+                drawer.DrawSmileyOk();
             }
 		}
 
@@ -29,32 +32,36 @@ namespace App
         {
 			let that = MouseEventHandlers;
 
-            let context = <Bootsrapper>event.data.context;
-            if (context.isLeftMousePressed || context.isMiddleMousePressed)
+            let context = <IContext>event.data.context;
+            let gameContext = context.GameContext;
+            let mouseContext = context.MouseContext;
+
+            if (mouseContext.isLeftMousePressed || mouseContext.isMiddleMousePressed)
             {
-                let field = context.field;
-                let skin = context.skin;
-                let canvas = context.canvas;
+                let field = context.GameContext.field;
+                let skin = context.GameContext.skin;
+                let canvas = context.GameContext.canvas;
+                let drawer = context.GameContext.drawer;
 
                 var rect = canvas.getBoundingClientRect();
                 var x = Math.floor(event.clientX - rect.left);
                 var y = Math.floor(event.clientY - rect.top);
 
-                let lx = context.lastPressedXCoord;
-                let ly = context.lastPressedYCoord;
+                let lx = mouseContext.lastPressedXCoord;
+                let ly = mouseContext.lastPressedYCoord;
 
                 let isInsideField: boolean = that.IsInsideField(x, y, skin, field);
                 let wasInsideField: boolean = that.IsInsideField(lx, ly, skin, field);
 
-                if (context.isLeftMousePressed)
+                if (mouseContext.isLeftMousePressed)
                 {
                     let isInsideSmiley: boolean = that.IsInsideSmiley(x, y, skin, field);
                     let wasInsideSmiley: boolean = that.IsInsideSmiley(lx, ly, skin, field);
 
                     if (wasInsideSmiley && !isInsideSmiley)
-                        context.drawer.DrawSmileyOk();
+                        drawer.DrawSmileyOk();
                     if (!wasInsideSmiley && isInsideSmiley)
-                        context.drawer.DrawSmileyPressed();
+                        drawer.DrawSmileyPressed();
 
                     if (wasInsideField && !isInsideField)
                     {
@@ -62,7 +69,7 @@ namespace App
                         let coords = that.GetFieldCoordinates(lx, ly, skin, field);
                         if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
                         {
-                            context.drawer.ReDrawCellClosed(coords.X, coords.Y);
+                            drawer.ReDrawCellClosed(coords.X, coords.Y);
                         }
                     }
                     else if (!wasInsideField && isInsideField)
@@ -71,7 +78,7 @@ namespace App
                         let coords = that.GetFieldCoordinates(x, y, skin, field);
                         if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed) 
                         {
-                            context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
+                            drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
                         }
                     }
                     else if  (wasInsideField && isInsideField)
@@ -83,14 +90,14 @@ namespace App
                         if (coords1.X != coords2.X || coords1.Y != coords2.X)
                         {
                             if (field.Cells[coords1.X][coords1.Y].State == CellStateEnum.Closed)
-                                context.drawer.ReDrawCellClosed(coords1.X, coords1.Y);
+                                drawer.ReDrawCellClosed(coords1.X, coords1.Y);
                             if (field.Cells[coords2.X][coords2.Y].State == CellStateEnum.Closed)
-                                context.drawer.ReDrawCellClosedPressed(coords2.X, coords2.Y);
+                                drawer.ReDrawCellClosedPressed(coords2.X, coords2.Y);
                         }
                     }
                 }
 
-                if (context.isMiddleMousePressed)
+                if (mouseContext.isMiddleMousePressed)
                 {
                     if  (wasInsideField && isInsideField)
                     {
@@ -100,20 +107,20 @@ namespace App
 
                         if (coords1.X != coords2.X || coords1.Y != coords2.X)
                         {
-                            context.DrawDepressedCells(context, coords1.X, coords1.Y);
-                            context.DrawPressedCells(context, coords2.X, coords2.Y);
+                            drawer.DrawDepressedCells(context, coords1.X, coords1.Y);
+                            drawer.DrawPressedCells(context, coords2.X, coords2.Y);
                         }
                     }
                     else if (wasInsideField && !isInsideField)
                     {
                         // unpress last cell and press one under cursor
                         let coords1 = that.GetFieldCoordinates(lx, ly, skin, field);
-                        context.DrawDepressedCells(context, coords1.X, coords1.Y);
+                        drawer.DrawDepressedCells(context, coords1.X, coords1.Y);
                     }
                 }
 
-                context.lastPressedXCoord = x;
-                context.lastPressedYCoord = y;
+                mouseContext.lastPressedXCoord = x;
+                mouseContext.lastPressedYCoord = y;
             }
         }
 		
@@ -121,67 +128,101 @@ namespace App
         {
 			let that = MouseEventHandlers;
 
-            let context = <Bootsrapper>event.data.context;
-            let skin = context.skin;
-            let field = context.field;
-            let canvas = context.canvas;
+            let context = <IContext>event.data.context;
+            let bootstrapper = <Bootsrapper>event.data.bootstrapper;
+
+            let gameContext = context.GameContext;
+            let mouseContext = context.MouseContext;
+
+            let skin = context.GameContext.skin;
+            let field = context.GameContext.field;
+            let canvas = context.GameContext.canvas;
+            let drawer = context.GameContext.drawer;
+            let game = context.GameContext.game;
 
             var rect = canvas.getBoundingClientRect();
             var x = Math.floor(event.clientX - rect.left);
             var y = Math.floor(event.clientY - rect.top);
 
-            if (!context.game.GameOver)
+            if (!game.GameOver)
             {
                 if (event.type == "mousedown")
                 {
                     if (event.which == 1)
                     {
-                        context.isLeftMousePressed = true;
+                        mouseContext.isLeftMousePressed = true;
                     }
                     else if (event.which == 2)
                     {
-                        context.isMiddleMousePressed = true;
+                        mouseContext.isMiddleMousePressed = true;
                     }
-                    context.drawer.DrawSmileyGuess();
-                    context.lastPressedXCoord = x;
-                    context.lastPressedYCoord = y;
+                    drawer.DrawSmileyGuess();
+                    mouseContext.lastPressedXCoord = x;
+                    mouseContext.lastPressedYCoord = y;
                 }
                 else if (event.type == "mouseup")
                 {
-                    context.isLeftMousePressed = false;
-                    context.isMiddleMousePressed = false;
-                    context.drawer.DrawSmileyOk();
+                    mouseContext.isLeftMousePressed = false;
+                    mouseContext.isMiddleMousePressed = false;
+                    drawer.DrawSmileyOk();
                 }
             }
 
             // Clicked inside FIELD
 
-            if (!context.game.GameOver && that.IsInsideField(x, y, skin, field))
+            if (!game.GameOver && that.IsInsideField(x, y, skin, field))
             {
                 let coords = that.GetFieldCoordinates(x, y, skin, field);
+                let clickResult: FieldClickResult;
                 if (event.type == "mouseup")
                 {
                     if (event.which == 1) // left mouse
                     {
-                        context.ProcessLeftClick(coords, context);
+                        clickResult = FieldClickProcessor.ProcessLeftClick(coords, field);
                     }
                     else if (event.which == 2) 
                     {
-                        context.ProcessMiddleClick(coords, context);
+                        drawer.DrawDepressedCells(context, x, y);
+
+                        clickResult = FieldClickProcessor.ProcessMiddleClick(coords, field);
                     }
                     else if (event.which == 3) // right mouse
                     {
-                        context.ProcessRightClick(coords, context);
+                        clickResult = FieldClickProcessor.ProcessRightClick(coords, field);
+                    }
+
+                    if (!game.GameStarted) 
+                    {
+                        // record time when game started
+                        game.GameStarted = new Date();
+                        if (skin.CanDrawTimers(field.Width))
+                        {
+                            context.GameContext.timer = setInterval(function(){ drawer.RedrawTime(context) }, 1000);
+                        }
+                    }
+                    
+                    if (clickResult.GameStatus == GameStatusEnum.Won || clickResult.GameStatus == GameStatusEnum.Lost)
+                    {
+                        that.SetGameOver(clickResult, context);
+                    }
+                    if (clickResult.HasChangedCells)
+                    {
+                        drawer.RedrawAllCells(context, clickResult.ChangedCellsFlags);
+                    }
+                    if (clickResult.IsBombCounterChanged)
+                    {
+                        let bombsLeft = field.CountOfBombsNotFlagged();
+                        drawer.DrawBombsLeftCounter(bombsLeft);
                     }
                 }
                 else if (event.type == "mousedown" && event.which == 1) // left
                 {
                     if (field.Cells[coords.X][coords.Y].State == CellStateEnum.Closed)
-                        context.drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
+                        drawer.ReDrawCellClosedPressed(coords.X, coords.Y);
                 }
                 else if (event.type == "mousedown" && event.which == 2) // middle
                 {
-                    context.DrawPressedCells(context, coords.X, coords.Y);                    
+                    drawer.DrawPressedCells(context, coords.X, coords.Y);
                 }
             }
 
@@ -189,28 +230,29 @@ namespace App
 
             if (event.type == "mousedown" && that.IsInsideSmiley(x, y, skin, field))
             {
-                context.drawer.DrawSmileyPressed();
+                drawer.DrawSmileyPressed();
                 // draw pressed smiley
             }
             if (event.type == "mouseup" && that.IsInsideSmiley(x, y, skin, field))
             {
+                let timer = context.GameContext.timer;
                 // start new game
                 // clear timer interval
-                if (context.timer) {
-                    clearInterval(context.timer);
-                    context.timer = undefined;
+                if (timer) {
+                    clearInterval(timer);
+                    timer = undefined;
                 }
                 // same as initialized by CanvasFieldDrawer constructor
                 let gameSettings :IGameSettings = {
-                    Width: context.field.Width,
-                    Height: context.field.Height,
-                    BombCount: context.field.TotalCountOfBombs()
+                    Width: field.Width,
+                    Height: field.Height,
+                    BombCount: field.TotalCountOfBombs()
                 };
                 let f = new FieldBuilder().Build(gameSettings);
-                context.field = f;
-                context.game = new Game();
+                field = f;
+                game = new Game();
                 // same as CanvasFieldDrawer.Init method
-                context.InitializeCanvas();
+                Bootsrapper.ResetAndStartNewGame(bootstrapper, context);
             }
             return false;
 		}
@@ -249,6 +291,34 @@ namespace App
                     X: Math.floor(x_field/16),
                     Y: Math.floor(y_field/16)
                 };
+        }
+
+        private static SetGameOver(clickResult: FieldClickResult, context: IContext)
+        {
+            let gameContext = context.GameContext;
+            let status = clickResult.GameStatus;
+            
+            if (status != GameStatusEnum.InProgress) 
+            {
+                gameContext.game.GameOver = true; 
+                // Stop drawing time game played
+                if (gameContext.timer) {
+                    clearInterval(gameContext.timer);
+                    gameContext.timer = undefined;
+                }
+                // Record time game played.
+                if (gameContext.game.GameStarted)
+                    gameContext.game.GameEnded = new Date();
+                // Redraw smile
+                if (status == GameStatusEnum.Won)
+                {
+                    gameContext.drawer.DrawSmileyWon();
+                }
+                else
+                {
+                    gameContext.drawer.DrawSmileyLost();
+                }
+		    }
         }
 	}
 }
