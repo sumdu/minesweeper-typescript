@@ -220,11 +220,11 @@ namespace App
                     {
                         if (clickResult.GameStatus == GameStatusEnum.Won)
                         {
-                            alert("You won!\nTime: " + gameContext.game.GameDurantionInSeconds + " seconds");
+                            alert("😊 Won!\n" + gameContext.game.GameDurantionInSeconds + " seconds");
                         }
                         else
                         {
-                            alert("Game lost ☹ <-- sad");
+                            alert("😦 Lost");
                         }
                     }
                 }
