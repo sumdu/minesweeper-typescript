@@ -214,6 +214,19 @@ namespace App
                         let bombsLeft = field.CountOfBombsNotFlagged();
                         drawer.DrawBombsLeftCounter(bombsLeft);
                     }
+
+                    // show message
+                    if (clickResult.GameStatus != GameStatusEnum.InProgress)
+                    {
+                        if (clickResult.GameStatus == GameStatusEnum.Won)
+                        {
+                            alert("You won!\nTime: " + gameContext.game.GameDurantionInSeconds + " seconds");
+                        }
+                        else
+                        {
+                            alert("Game lost ☹ <-- sad");
+                        }
+                    }
                 }
                 else if (event.type == "mousedown" && event.which == 1) // left
                 {

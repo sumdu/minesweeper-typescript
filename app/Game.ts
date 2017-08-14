@@ -31,5 +31,14 @@ namespace App
         {
             this._gameOver = value;
         }
+
+        public get GameDurantionInSeconds():number
+        {
+            if (this.GameStarted && this.GameEnded)
+            {
+                return this.GameEnded.getSeconds()-this.GameStarted.getSeconds();
+            }
+            return 0;
+        }
     }
 }
