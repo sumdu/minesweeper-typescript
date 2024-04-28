@@ -13,6 +13,7 @@ namespace App
 
             let fileName = 'img/default.png';
             var img = new Image();
+            img.crossOrigin = 'anonymous';
             img.onload = (function() {
                 let canvas = <HTMLCanvasElement>document.createElement('canvas');
                 canvas.id = "canvas_temp";

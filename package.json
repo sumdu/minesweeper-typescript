@@ -1,0 +1,14 @@
+{
+  "name": "minesweeper-typescript",
+  "version": "1.0.0",
+  "scripts": {
+    "prep": "typings install",
+    "build": "tsc",
+    "start": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --allow-file-access-from-files E:\\Dev\\minesweeper-typescript\\index.html"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "typings": "^2.1.1"
+  },
+  "dependencies": {}
+}
