@@ -5,9 +5,9 @@
   "main": "src/index.ts",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npx tsc && node ./build.js && cp -r ./static_files/* ./dist/",
+    "build": "npx tsc && node ./build.js && cp -r -u ./static_files/* ./dist/",
     "build:gen-defs": "./node_modules/.bin/dts-bundle-generator --verbose -o dist/index.d.ts src/index.ts",
-    "start": ""
+    "start": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --disable-web-security --allow-file-access-from-files ."
   },
   "engines": {
     "node": ">=18.16.0 <19.0.0"

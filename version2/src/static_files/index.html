@@ -3,20 +3,25 @@
   <head>
   	<meta charset="utf-8">
   	<title>Namaste World</title>
-    <!-- <link rel="stylesheet" href="css/style.css"> -->
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   </head>
   <body>
 
-    <!-- <div id="loading">
+    <div id="loading">
       <img src="img/loading.gif" />
     </div>
-    <canvas id="canvas1"></canvas> -->
+    <canvas id="canvas1"></canvas>
 
-    <script src="index.js"></script>
-    <!-- <script type="text/javascript">
-      App.Start("canvas1", "loading");
-    </script> -->
+    <script src="index.js" type="module"></script>
+    <script type="text/javascript">
+      
+      import { App } from "./index.js";
+
+      let canvasElement = document.getElementById('canvas1');// as HTMLCanvasElement;
+      let loaderElement = document.getElementById('loading');// as HTMLElement;
+      new App().Start(canvasElement, loaderElement);
+    </script>
 
   </body>
 </html>

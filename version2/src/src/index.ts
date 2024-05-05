@@ -1,11 +1,17 @@
-import { App } from "./game/App";
+import { TestGameSettings } from './game/GameSettings';
+import { FieldBuilder } from './game/FieldBuilder';
+import { SkinLoader } from './game/SkinLoader';
+import { Bootsrapper } from './bootstrap/Bootsrapper';
 
-class Hello
+export class App
 {
-    Hi(): void {
-        console.log('Hello there you!');
-        new App().Start(new HTMLCanvasElement(), new HTMLElement());
+    public Start(canvas: HTMLCanvasElement, loaderElement: HTMLElement):void
+    {
+        SkinLoader.LoadDefaultSkin(loaderElement, function(skin) {
+            let field = new FieldBuilder().Build(new TestGameSettings());
+            let bootstrapper = new Bootsrapper(canvas, skin, field);
+            bootstrapper.Bootstrap();
+        });
     }
 }
 
-new Hello().Hi();
