@@ -10,8 +10,4 @@ npm-debug.log*
 
 # Compiled typescript files
 tsbuild/
-
-# Typings
-typings/
-
-
+dist/
