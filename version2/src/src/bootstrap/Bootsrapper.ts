@@ -1,4 +1,6 @@
-import $ from 'jquery';
+/// <reference path="../../node_modules/@types/jquery/index.d.ts" />
+
+//import $ from 'jquery';
 import { Field } from "../game/Field";
 import { FieldBuilder } from "../game/FieldBuilder";
 import { Game } from "../game/Game";

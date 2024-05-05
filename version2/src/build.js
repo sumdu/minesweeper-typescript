@@ -7,6 +7,8 @@ const sharedConfig = {
   minify: false,
   // only needed if you have dependencies
   // external: Object.keys(dependencies).concat(Object.keys(peerDependencies)),
+  sourcemap: true,
+ 
 };
 
 build({
@@ -14,4 +16,5 @@ build({
   platform: 'browser',
   format: 'esm',
   outfile: "dist/index.js",
+  
 });

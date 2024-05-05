@@ -3,13 +3,12 @@ import { Skin } from "./Skin";
 
 export class SkinLoader
 {
-    public static LoadDefaultSkin(loaderElementId: string, onLoadedDelegate: ISkinLoadedDelegate)
+    public static LoadDefaultSkin(loaderElement: HTMLElement, onLoadedDelegate: ISkinLoadedDelegate)
     {
         // remove loading element
-        if (loaderElementId)
+        if (loaderElement && loaderElement.parentNode)
         {
-            let msgElement = <HTMLElement>document.getElementById(loaderElementId);
-            msgElement.parentNode.removeChild(msgElement);
+            loaderElement.parentNode.removeChild(loaderElement);
         }
 
         let fileName = 'img/default.png';
