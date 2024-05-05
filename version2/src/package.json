@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "node ./build.js && cp index.html ./dist/",
+    "build": "npx tsc && node ./build.js && cp -r ./static_files/* ./dist/",
     "build:gen-defs": "./node_modules/.bin/dts-bundle-generator --verbose -o dist/index.d.ts src/index.ts",
     "start": ""
   },
@@ -17,6 +17,7 @@
     "@types/jquery": "^3.5.29",
     "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.20.2",
+    "esbuild-plugin-tsc": "^0.4.0",
     "typescript": "^5.4.5"
   }
 }
