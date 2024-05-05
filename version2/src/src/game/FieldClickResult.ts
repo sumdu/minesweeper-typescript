@@ -10,6 +10,8 @@ export class FieldClickResult
     public constructor()
     {
         this.HasChangedCells = false;
+        this.ChangedCellsFlags = new Array<Array<boolean>>();
         this.IsBombCounterChanged = false;
+        this.GameStatus = GameStatusEnum.Unknown;
     }
 }

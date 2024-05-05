@@ -1,31 +1,36 @@
 import { Cell } from './Cell';
 import { CellStateEnum } from './CellStateEnum';
 import { GameStatusEnum } from './GameStatusEnum';
+import { NullableCell } from './NullableCell';
 
 
 export class Field
 {
 	public Cells: Cell[][];
-	
-	get Width():number {return this.Cells.length;}
-	get Height():number {return this.Cells[0].length;}
 
-	public GetCellWithNeighbours(x: number, y: number)
+	constructor() {
+		this.Cells = new Array<Array<Cell>>()
+	}
+	
+	get Width(): number { return this.Cells.length; }
+	get Height(): number { return this.Cells[0].length; }
+
+	public GetCellWithNeighbours(x: number, y: number): NullableCell[][] 
 	{
 		return this.GetCellNeighbours(x, y, true);
 	}
 
-	public GetNeighbours(x: number, y: number):Cell[][] 
+	public GetNeighbours(x: number, y: number): NullableCell[][] 
 	{
 		return this.GetCellNeighbours(x, y, false);
 	}
 
-	private GetCellNeighbours(x: number, y: number, includeCenter: boolean):Cell[][] 
+	private GetCellNeighbours(x: number, y: number, includeCenter: boolean): NullableCell[][] 
 	{
 		let w = this.Width;
 		let h = this.Height;
 		
-		let res: Cell[][] = [];
+		let res: NullableCell[][] = [];
 		for (let i=0; i<3; i++)
 		{
 			res[i] = [];
@@ -57,7 +62,7 @@ export class Field
 			{
 				if (neighbours[i][j] != null)
 				{
-					neighbours[i][j].IncrementBombsAround();
+					neighbours[i][j]!.IncrementBombsAround();
 				}
 			}
 		}
@@ -70,7 +75,7 @@ export class Field
 		{
 			for (let j=0; j<3; j++)
 			{
-				if (neighbours[i][j] != null && neighbours[i][j].HasBomb && neighbours[i][j].State != CellStateEnum.Flagged)
+				if (neighbours[i][j] != null && neighbours[i][j]!.HasBomb && neighbours[i][j]!.State != CellStateEnum.Flagged)
 				{
 					return false;
 				}
@@ -87,7 +92,7 @@ export class Field
 		{
 			for (let j=0; j<3; j++)
 			{
-				if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Flagged)
+				if (neighbours[i][j] != null && neighbours[i][j]!.State == CellStateEnum.Flagged)
 				{
 					res++;
 				}
@@ -103,9 +108,9 @@ export class Field
 		{
 			for (let j=0; j<3; j++)
 			{
-				if (neighbours[i][j] != null && neighbours[i][j].HasBomb && neighbours[i][j].State != CellStateEnum.Flagged)
+				if (neighbours[i][j] != null && neighbours[i][j]!.HasBomb && neighbours[i][j]!.State != CellStateEnum.Flagged)
 				{
-					neighbours[i][j].State = CellStateEnum.Exploded;
+					neighbours[i][j]!.State = CellStateEnum.Exploded;
 				}
 			}
 		}

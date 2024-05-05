@@ -34,11 +34,17 @@ export class Bootsrapper
         let ctx = this.context;
         let canvas = this.context.GameContext.canvas;
         
-        $(canvas).off("mousedown", MouseEventHandlers.OnClickEventListener);
-        $(canvas).off("mouseup", MouseEventHandlers.OnClickEventListener);
-        $(canvas).off("mousemove", MouseEventHandlers.OnMoveEventListener);
-        $(canvas).off("contextmenu", MouseEventHandlers.OnClickEventListener);
-        $(document).off("mousemove", MouseEventHandlers.OnBodyMoveEventListener);
+        // $(canvas).off("mousedown", MouseEventHandlers.OnClickEventListener);
+        // $(canvas).off("mouseup", MouseEventHandlers.OnClickEventListener);
+        // $(canvas).off("mousemove", MouseEventHandlers.OnMoveEventListener);
+        // $(canvas).off("contextmenu", MouseEventHandlers.OnClickEventListener);
+        // $(document).off("mousemove", MouseEventHandlers.OnBodyMoveEventListener);
+
+        $(canvas).off("mousedown");
+        $(canvas).off("mouseup");
+        $(canvas).off("mousemove");
+        $(canvas).off("contextmenu");
+        $(document).off("mousemove");
 
         $(canvas).on("mousedown", {context: ctx}, MouseEventHandlers.OnClickEventListener );
         $(canvas).on("mouseup", {context: ctx, bootstrapper: this}, MouseEventHandlers.OnClickEventListener );
@@ -79,7 +85,7 @@ export class Bootsrapper
 
         gameContext.field = new FieldBuilder().Build(gameSettings);
         gameContext.game = new Game();
-        gameContext.timer = undefined;
+        gameContext.timer = null;
         
         bootstrapper.InitializeCanvas();
     }

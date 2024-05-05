@@ -1,4 +1,5 @@
 import { ISkinLoadedDelegate } from "./ISkinLoadedDelegate";
+import { MinesweeperException } from "./MinesweeperException";
 import { Skin } from "./Skin";
 
 export class SkinLoader
@@ -22,6 +23,11 @@ export class SkinLoader
             canvas.style.visibility = "hidden";
 
             var context = canvas.getContext('2d');
+
+            if (context == null) {
+                throw new MinesweeperException('Unable to get 2d context of a canvas');
+            }
+
             context.drawImage(img, 0, 0);
 
             let skin: Skin = {

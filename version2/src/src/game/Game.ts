@@ -1,7 +1,7 @@
 export class Game
 {
-    private _gameStarted: Date;
-    public get GameStarted(): Date
+    private _gameStarted: Date|null = null;
+    public get GameStarted(): Date|null
     {
         return this._gameStarted;
     }
@@ -10,8 +10,8 @@ export class Game
         this._gameStarted = date;
     }
 
-    private _gameEnded: Date;
-    public get GameEnded(): Date
+    private _gameEnded: Date|null = null;
+    public get GameEnded(): Date|null
     {
         return this._gameEnded;
     }
@@ -20,7 +20,7 @@ export class Game
         this._gameEnded = date;
     }
 
-    private _gameOver: boolean = false;
+    private _gameOver: boolean = true;
     public get GameOver():boolean
     {
         return this._gameOver;

@@ -2,5 +2,6 @@ export enum GameStatusEnum
 {
 	Won,
 	Lost,
-	InProgress
+	InProgress,
+	Unknown
 }

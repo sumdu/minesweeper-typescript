@@ -1,6 +1,7 @@
 import { CanvasDrawer } from "../drawer/CanvasDrawer";
 import { Field } from "../game/Field";
 import { Game } from "../game/Game";
+import { MinesweeperException } from "../game/MinesweeperException";
 import { Skin } from "../game/Skin";
 
 export class GameContext
@@ -9,7 +10,7 @@ export class GameContext
     public skin: Skin;
     public field: Field;
     public game: Game;
-    public timer : number;
+    public timer : number|null;
 
     public constructor (canvas: HTMLCanvasElement, skin: Skin, field: Field)
     {
@@ -20,13 +21,17 @@ export class GameContext
         this.timer = null;
     }
 
-    private _drawer: CanvasDrawer = null;
+    private _drawer: CanvasDrawer|null = null;
 
     public get drawer(): CanvasDrawer 
     { 
         if (!this._drawer)
         {
             let context2d = this.canvas.getContext("2d");
+            if (context2d == null)
+            {
+                throw new MinesweeperException("Unable to get 2d context");
+            }
             this._drawer  = new CanvasDrawer(context2d, this.skin, this.field.Width, this.field.Height, this.field.TotalCountOfBombs());
         }
         return this._drawer;

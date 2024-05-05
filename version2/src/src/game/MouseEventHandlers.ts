@@ -6,6 +6,7 @@ import { FieldClickProcessor } from "./FieldClickProcessor";
 import { FieldClickResult } from "./FieldClickResult";
 import { GameStatusEnum } from "./GameStatusEnum";
 import { IFieldCoordinate } from "./IFieldCoordinate";
+import { MinesweeperException } from "./MinesweeperException";
 import { Skin } from "./Skin";
 
 export class MouseEventHandlers
@@ -181,7 +182,7 @@ export class MouseEventHandlers
         if (!game.GameOver && that.IsInsideField(x, y, skin, field))
         {
             let coords = that.GetFieldCoordinates(x, y, skin, field);
-            let clickResult: FieldClickResult;
+            let clickResult: FieldClickResult|null = null;
             if (event.type == "mouseup")
             {
                 if (event.which == 1) // left mouse
@@ -197,6 +198,11 @@ export class MouseEventHandlers
                 else if (event.which == 3) // right mouse
                 {
                     clickResult = FieldClickProcessor.ProcessRightClick(coords, field);
+                }
+
+                if (clickResult == null)
+                {
+                    throw new MinesweeperException("Click result is null");
                 }
 
                 if (!game.GameStarted) 
@@ -307,7 +313,7 @@ export class MouseEventHandlers
             // Stop timer
             if (gameContext.timer) {
                 clearInterval(gameContext.timer);
-                gameContext.timer = undefined;
+                gameContext.timer = null;
             }
             // To stop processing click events
             gameContext.game.GameOver = true; 

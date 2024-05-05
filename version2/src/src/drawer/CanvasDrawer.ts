@@ -1,6 +1,7 @@
 import { IContext } from "../bootstrap/IContext";
 import { Cell } from "../game/Cell";
 import { CellStateEnum } from "../game/CellStateEnum";
+import { MinesweeperException } from "../game/MinesweeperException";
 import { Skin } from "../game/Skin";
 
 export class CanvasDrawer
@@ -15,6 +16,13 @@ export class CanvasDrawer
         let w = this.fieldWidth;
         let h = this.fieldHeight;
         
+        if (skin.BORDER_TOP_LEFT == null || skin.BORDER_TOP == null || skin.BORDER_TOP_RIGHT == null || skin.BORDER_LEFT1 == null 
+            || skin.BORDER_RIGHT1 == null || skin.BORDER_MEDIUM_LEFT == null || skin.BORDER_MEDIUM == null || skin.BORDER_MEDIUM_RIGHT == null
+            || skin.BORDER_LEFT == null || skin.BORDER_RIGHT == null || skin.BORDER_BOTTOM_LEFT == null || skin.BORDER_BOTTOM == null
+            || skin.BORDER_BOTTOM_RIGHT == null || skin.BACKGROUND_PIXEL == null) {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
+
         // draw border
         context.putImageData(skin.BORDER_TOP_LEFT, 0, 0);
         for (let i = 0; i < w*16; i++)
@@ -65,46 +73,64 @@ export class CanvasDrawer
 
     public DrawSmileyOk():void
     {
+        if (this.skin.SMILE_OK == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.DrawSmiley(this.skin.SMILE_OK);
     }
 
     public DrawSmileyPressed():void
     {
+        if (this.skin.SMILE_PRESSED == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.DrawSmiley(this.skin.SMILE_PRESSED);
     }
 
     public DrawSmileyGuess():void
     {
+        if (this.skin.SMILE_GUESS == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.DrawSmiley(this.skin.SMILE_GUESS);
     }
 
     public DrawSmileyWon():void
     {
+        if (this.skin.SMILE_WON == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.DrawSmiley(this.skin.SMILE_WON);
     }
 
     public DrawSmileyLost():void
     {
+        if (this.skin.SMILE_LOST == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.DrawSmiley(this.skin.SMILE_LOST);
     }
 
     public ReDrawCellClosed(x: number, y: number)
     {
+        if (this.skin.CLOSED == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.ReDrawCell(x, y, this.skin.CLOSED);
     }
 
     public ReDrawCellClosedPressed(x: number, y: number)
     {
+        if (this.skin.CELL_PRESSED == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.ReDrawCell(x, y, this.skin.CELL_PRESSED);
     }
 
     public ReDrawCellQuestion(x: number, y: number)
     {
+        if (this.skin.QUESTION == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.ReDrawCell(x, y, this.skin.QUESTION);
     }
 
     public ReDrawCellQuestionPressed(x: number, y: number)
     {
+        if (this.skin.QUESTION_PRESSED == null)
+            throw new MinesweeperException('Skin is not loaded fully');
         this.ReDrawCell(x, y, this.skin.QUESTION_PRESSED);
     }
 
@@ -112,7 +138,14 @@ export class CanvasDrawer
     public DrawCell(cell: Cell, x: number, y: number):void
     {
         let skin = this.skin;
-        let img: ImageData = this.skin.CLOSED;
+
+        if (skin.CLOSED == null || skin.EXPLODED == null || skin.FLAG == null 
+            || skin.OPENED_CELLS == null || skin.QUESTION == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
+
+        let img: ImageData = skin.CLOSED;
         switch (cell.State)
         {
             case CellStateEnum.Closed:
@@ -138,6 +171,13 @@ export class CanvasDrawer
     public DrawOpenCell(cell: Cell, x: number, y: number):void
     {
         let skin = this.skin;
+
+        if (skin.MINE == null || skin.CLOSED == null || skin.EXPLODED == null || skin.OPENED_CELLS == null
+            || skin.FLAG == null || skin.WRONG_FLAG == null || skin.QUESTION == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
+
         let img: ImageData = skin.CLOSED;
         if (cell.State == CellStateEnum.Open)
         {
@@ -179,16 +219,26 @@ export class CanvasDrawer
         this.ReDrawCell(x, y, img);
     }
 
-
     public DrawTimerBackground()
     {
         let skin = this.skin;
+
+        if (skin.BACKGROUND_TIMER == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
+
         this.context2d.putImageData(skin.BACKGROUND_TIMER, skin.FIELD_START_POS_X + this.fieldWidth*skin.CELL_WIDTH - 5 - 41, 15);
     }
 
     public DrawTimeElapsed(seconds: number)
     {
         let skin = this.skin;
+
+        if (skin.DIGITS == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
 
         // draw bombs left counter and timer For field with width 7 cols and more
         if (!skin.CanDrawTimers(this.fieldWidth))
@@ -209,6 +259,11 @@ export class CanvasDrawer
 
     public DrawBombsLeftCounterBackground() 
     {
+        if (this.skin.BACKGROUND_TIMER == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
+
         this.context2d.putImageData(this.skin.BACKGROUND_TIMER, 12+5, 15)
     }
 
@@ -216,6 +271,11 @@ export class CanvasDrawer
     {
         let skin = this.skin;
         let w = this.fieldWidth;
+
+        if (skin.DIGITS == null)
+        {
+            throw new MinesweeperException('Skin is not loaded fully');
+        }
 
         // draw bombs left counter and timer For field with width 7 cols and more
         if (!skin.CanDrawTimers(w))
@@ -298,11 +358,11 @@ export class CanvasDrawer
         {
             for (let j=0; j<3; j++)
             {
-                if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed)
+                if (neighbours[i][j] != null && neighbours[i][j]!.State == CellStateEnum.Closed)
                 {
                     drawer.ReDrawCellClosedPressed(x+i-1, y+j-1);
                 }
-                if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned)
+                if (neighbours[i][j] != null && neighbours[i][j]!.State == CellStateEnum.Questioned)
                 {
                     drawer.ReDrawCellQuestionPressed(x+i-1, y+j-1);
                 }
@@ -321,11 +381,11 @@ export class CanvasDrawer
         {
             for (let j=0; j<3; j++)
             {
-                if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Closed) 
+                if (neighbours[i][j] != null && neighbours[i][j]!.State == CellStateEnum.Closed) 
                 {
                     drawer.ReDrawCellClosed(x+i-1, y+j-1);
                 }
-                if (neighbours[i][j] != null && neighbours[i][j].State == CellStateEnum.Questioned) 
+                if (neighbours[i][j] != null && neighbours[i][j]!.State == CellStateEnum.Questioned) 
                 {
                     drawer.ReDrawCellQuestion(x+i-1, y+j-1);
                 }
