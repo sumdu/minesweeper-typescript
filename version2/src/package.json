@@ -1,0 +1,21 @@
+{
+  "name": "minesweeper-ts",
+  "version": "1.0.0",
+  "description": "Minesweeper game that can be run in the client-side (browser)",
+  "main": "src/index.ts",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "node ./build.js && cp index.html ./dist/",
+    "build:gen-defs": "./node_modules/.bin/dts-bundle-generator --verbose -o dist/index.d.ts src/index.ts",
+    "start": ""
+  },
+  "engines": {
+    "node": ">=18.16.0 <19.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "dts-bundle-generator": "^9.5.1",
+    "esbuild": "^0.20.2",
+    "typescript": "^5.4.5"
+  }
+}
