@@ -1,4 +1,4 @@
-import { TestGameSettings } from './game/GameSettings';
+import { ExpertGameSettings, TestGameSettings } from './game/GameSettings';
 import { FieldBuilder } from './game/FieldBuilder';
 import { SkinLoader } from './game/SkinLoader';
 import { Bootsrapper } from './bootstrap/Bootsrapper';

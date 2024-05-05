@@ -21,7 +21,7 @@ build({
   plugins: [
     esbuildPluginTsc({
       force: true,
-      //tsconfigPath: './tsconfig.json'
+      //tsconfigPath: './tsconfig.json' // already used by default, but only some properties from tsconfig are used
     }),
   ],
 });
