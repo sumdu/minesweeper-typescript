@@ -20,7 +20,7 @@ export class Game
         this._gameEnded = date;
     }
 
-    private _gameOver: boolean = true;
+    private _gameOver: boolean = false;
     public get GameOver():boolean
     {
         return this._gameOver;
