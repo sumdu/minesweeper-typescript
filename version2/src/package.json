@@ -5,10 +5,10 @@
   "main": "src/index.ts",
   "license": "UNLICENSED",
   "scripts": {
-    "build": "npx tsc && node ./build.js && cp -r -u ./static_files/* ./dist/",
+    "build": "npx tsc && node ./build.js",
     "build:gen-defs": "./node_modules/.bin/dts-bundle-generator --verbose -o dist/index.d.ts src/index.ts",
     "build:watch": "nodemon --watch src --watch static_files -e js,json,ts,css,png,gif,html --exec \"yarn build\"",
-    "start": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --disable-web-security --allow-file-access-from-files ."
+    "start": "\"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe\" --disable-web-security --allow-file-access-from-files \"file://$(pwd)\""
   },
   "engines": {
     "node": ">=18.16.0 <19.0.0"
@@ -19,6 +19,7 @@
     "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.20.2",
     "esbuild-plugin-tsc": "^0.4.0",
+    "fs-extra": "^11.2.0",
     "nodemon": "^3.1.0",
     "typescript": "^5.4.5"
   }

@@ -2,6 +2,7 @@ const { build } = require('esbuild');
 const { esbuildPluginTsc } = require('esbuild-plugin-tsc');
 const { dependencies, peerDependencies } = require('./package.json');
 //const { Generator } = require('npm-dts'); // requries yarn add npm-dts --dev
+const fs = require('fs-extra');
 
 // new Generator({
 //   entry: 'src/index.ts',
@@ -24,4 +25,9 @@ build({
       //tsconfigPath: './tsconfig.json' // already used by default, but only some properties from tsconfig are used
     }),
   ],
-});
+})
+.then(() => {
+  fs.copySync('static_files', 'dist');
+  console.log('Static files copied successfully!');
+})
+.catch(() => process.exit(1));
