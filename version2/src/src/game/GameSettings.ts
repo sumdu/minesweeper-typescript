@@ -21,9 +21,9 @@ export class MediumGameSettings implements IGameSettings
 
 export class ExpertGameSettings implements IGameSettings
 {
-	public get Width(): number {return 30};
-	public get Height(): number {return 16};
-	public get BombCount(): number {return 99};
+	public get Width(): number {return 200};
+	public get Height(): number {return 200};
+	public get BombCount(): number {return 800};
 }
 
 export class TestGameSettings implements IGameSettings

@@ -8,7 +8,7 @@ export class App
     public Start(canvas: HTMLCanvasElement, loaderElement: HTMLElement):void
     {
         SkinLoader.LoadDefaultSkin(loaderElement, function(skin) {
-            let field = new FieldBuilder().Build(new TestGameSettings());
+            let field = new FieldBuilder().Build(new ExpertGameSettings());
             let bootstrapper = new Bootsrapper(canvas, skin, field);
             bootstrapper.Bootstrap();
         });
